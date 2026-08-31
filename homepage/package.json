@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@dbml/parse": "^7.1.2",
-    "@hdnax/genuix": "^0.15.2",
+    "@hdnax/genuix": "^0.16.0",
     "@hdnax/sqlingo.js": "workspace:*",
     "@unhead/vue": "^3.1.0",
     "highlight.js": "^11.11.1",
@@ -22,7 +22,8 @@
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@tailwindcss/vite": "^4.2.4",
     "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^6.0.6",

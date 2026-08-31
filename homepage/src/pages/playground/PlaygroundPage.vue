@@ -1,54 +1,53 @@
 <template>
   <MainLayout :breadcrumb="navBreadcrumb">
-    <main class="p-lg">
-      <div>
-        <h1 class="gui-neutral-fg mb-sm text-xl font-bold">
-          sqlingo.js Playground
-        </h1>
-        <GTab
-          :default="tab"
-          @select="onTabSelect"
-        >
-          <template
-            #tab-trigger="{
-              tab: panelTab,
-            }"
+    <main class="px-4">
+      <div class="flex flex-wrap items-end gap-5 pt-9 pb-5">
+        <div>
+          <h1 class="m-0 text-3xl font-bold tracking-tight">
+            Playground
+          </h1>
+          <p class="gui-neutral-fg-muted mt-2 text-sm">
+            Everything runs locally in your browser. Nothing is sent anywhere.
+          </p>
+        </div>
+        <div class="flex-1" />
+        <div class="gui-primary-border flex rounded-[10px] border bg-(--color-primary-3) p-1">
+          <button
+            type="button"
+            class="cursor-pointer rounded-[7px] border-none px-5 py-2.5 text-sm font-semibold"
+            :class="tab === Tab.Transpile ? 'gui-primary-fg bg-white shadow-xs' : 'gui-primary-fg-muted bg-transparent'"
+            @click="onSelectTranspile"
           >
-            <GIcon
-              v-if="panelTab.icon"
-              :name="panelTab.icon"
-            />
-            <span class="text-sm">{{ panelTab.label }}</span>
-          </template>
-          <GTabPanel
-            :name="Tab.Transpile"
-            label="Transpile"
-            :icon="GIconName.ArrowsLeftRight"
-            class="p-3"
+            Transpile
+          </button>
+          <button
+            type="button"
+            class="cursor-pointer rounded-[7px] border-none px-5 py-2.5 text-sm font-semibold"
+            :class="tab === Tab.Dbml ? 'gui-primary-fg bg-white shadow-xs' : 'gui-primary-fg-muted bg-transparent'"
+            @click="onSelectDbml"
           >
-            <p class="gui-neutral-fg-muted mb-sm text-sm/3">
-              Transpile between SQL dialects.
-            </p>
-            <SqlTranspile />
-          </GTabPanel>
-          <GTabPanel
-            :name="Tab.Dbml"
-            label="SQL to DBML"
-            :icon="GIconName.Database"
-            class="p-3"
-          >
-            <p class="gui-neutral-fg-muted mb-sm text-sm/3">
-              Paste CREATE TABLE SQL and get a <a
-                href="https://dbml.dbdiagram.io/docs/"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="gui-info-fg no-underline hover:underline"
-              >DBML</a> schema back.
-            </p>
-            <SqlToDbml />
-          </GTabPanel>
-        </GTab>
+            SQL to DBML
+          </button>
+        </div>
       </div>
+
+      <div v-if="tab === Tab.Transpile">
+        <SqlTranspile />
+      </div>
+      <div v-else>
+        <p class="gui-neutral-fg-muted mb-3 text-sm">
+          Paste CREATE TABLE SQL and get a
+          <a
+            href="https://dbml.dbdiagram.io/docs/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="gui-primary-fg no-underline hover:underline"
+          >DBML</a> schema back.
+        </p>
+        <SqlToDbml />
+      </div>
+
+      <div class="h-20" />
     </main>
   </MainLayout>
 </template>
@@ -56,13 +55,8 @@
 <script setup lang="ts">
 import {
   computed,
+  ref,
 } from 'vue';
-import {
-  GTab,
-  GTabPanel,
-  GIcon,
-  GIconName,
-} from '@hdnax/genuix';
 import {
   useSeoMeta,
 } from '@unhead/vue';
@@ -83,25 +77,27 @@ useSeoMeta({
 
 const base = import.meta.env.BASE_URL;
 
-const navBreadcrumb = computed(() => {
-  const crumbs: Array<{
-    label: string;
-    href?: string;
-  }> = [
-    {
-      label: 'Playground',
-      href: `${base}playground/`,
-    },
-  ];
-
-  return crumbs;
-});
+const navBreadcrumb = computed(() => [
+  {
+    label: 'Playground',
+    href: `${base}playground/`,
+  },
+]);
 
 const store = usePlaygroundStore();
-const tab = store.tab;
+const tab = ref(store.tab);
 
-function onTabSelect (name: string) {
-  store.tab = name as Tab;
+function onSelectDbml () {
+  selectTab(Tab.Dbml);
+}
+
+function onSelectTranspile () {
+  selectTab(Tab.Transpile);
+}
+
+function selectTab (mode: Tab) {
+  tab.value = mode;
+  store.tab = mode;
   store.persist();
 }
 </script>

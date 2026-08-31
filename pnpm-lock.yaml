@@ -41,8 +41,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2
       '@hdnax/genuix':
-        specifier: ^0.15.2
-        version: 0.15.2(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.7.0))(highlight.js@11.11.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3)))(vue@3.5.34(typescript@6.0.3))
+        specifier: ^0.16.0
+        version: 0.16.0(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.7.0))(highlight.js@11.11.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3)))(vue@3.5.34(typescript@6.0.3))
       '@hdnax/sqlingo.js':
         specifier: workspace:*
         version: link:../packages/sqlingo.js
@@ -68,9 +68,12 @@ importers:
         specifier: ^5.0.6
         version: 5.0.6(@vue/compiler-sfc@3.5.34)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3)))(vue@3.5.34(typescript@6.0.3))
     devDependencies:
-      '@fontsource/ibm-plex-mono':
-        specifier: ^5.2.7
-        version: 5.2.7
+      '@fontsource-variable/archivo':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource-variable/jetbrains-mono':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@tailwindcss/vite':
         specifier: ^4.2.4
         version: 4.2.4(vite@8.1.0(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
@@ -453,14 +456,17 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@fontsource/ibm-plex-mono@5.2.7':
-    resolution: {integrity: sha512-MKAb8qV+CaiMQn2B0dIi1OV3565NYzp3WN5b4oT6LTkk+F0jR6j0ZN+5BKJiIhffDC3rtBULsYZE65+0018z9w==}
+  '@fontsource-variable/archivo@5.3.0':
+    resolution: {integrity: sha512-HogK8FJelrD1o7TlZlkIVtHgc20bO5PZRWE7mUeUTdMN055alznQV6/00J00IBeu8FQAH4s3zW9UJNvKExXf+g==}
+
+  '@fontsource-variable/jetbrains-mono@5.3.0':
+    resolution: {integrity: sha512-F32xpS2NsGYoQi2ADSkKTgpJj7ozajsGgDJ8woTnqjmIB+dxDIqImjl4pXZVEExu8UFZ2ndhmX18EBS/hdz3Lw==}
 
   '@gerrit0/mini-shiki@3.23.0':
     resolution: {integrity: sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg==}
 
-  '@hdnax/genuix@0.15.2':
-    resolution: {integrity: sha512-RGSphUy2HvXHAh+OBVTqB/hE/EjR4il8wSSadzQCoGEYFvLZQd9bV2MjBWp07PErhPgXyiozh+lvj4pa4mHfFQ==}
+  '@hdnax/genuix@0.16.0':
+    resolution: {integrity: sha512-qmEdXL+sOJI3oQjQvpQ7R5mn3i6Ie1isoHhqLynV/a96+N1bvfIOR5UKgm2ZdVwpdsP7ySC7hfja3W0+0wMVow==}
     peerDependencies:
       '@phosphor-icons/vue': ^2.2.1
       highlight.js: ^11.0.0
@@ -3598,7 +3604,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@fontsource/ibm-plex-mono@5.2.7': {}
+  '@fontsource-variable/archivo@5.3.0': {}
+
+  '@fontsource-variable/jetbrains-mono@5.3.0': {}
 
   '@gerrit0/mini-shiki@3.23.0':
     dependencies:
@@ -3608,8 +3616,10 @@ snapshots:
       '@shikijs/types': 3.23.0
       '@shikijs/vscode-textmate': 10.0.2
 
-  '@hdnax/genuix@0.15.2(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.7.0))(highlight.js@11.11.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3)))(vue@3.5.34(typescript@6.0.3))':
+  '@hdnax/genuix@0.16.0(@phosphor-icons/vue@2.2.1(vue@3.5.34(typescript@6.0.3)))(eslint@9.39.4(jiti@2.7.0))(highlight.js@11.11.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3)))(vue@3.5.34(typescript@6.0.3))':
     dependencies:
+      '@fontsource-variable/archivo': 5.3.0
+      '@fontsource-variable/jetbrains-mono': 5.3.0
       '@hdnax/stdx': 0.3.7(eslint@9.39.4(jiti@2.7.0))
       '@phosphor-icons/vue': 2.2.1(vue@3.5.34(typescript@6.0.3))
       dompurify: 3.4.11

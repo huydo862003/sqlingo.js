@@ -1,230 +1,211 @@
 <template>
   <MainLayout>
-    <main
-      id="hero"
-      class="gui-neutral-bg"
-    >
-      <GHero class="p-5">
-        <template #icon>
-          <GLogo
-            src="/sqlingo.js/icon.svg"
-            alt="sqlingo.js logo"
-            :size="GLogoSize.Lg"
-            class="rounded-md bg-white"
-          />
-        </template>
-        <template #title>
-          <h1 class="text-3xl font-extrabold">
-            sqlingo.js: A Typescript/Javascript port of SQLGlot
+    <main class="mx-auto max-w-[1080px] px-7">
+      <!-- Hero -->
+      <div class="grid items-start gap-16 py-20 lg:grid-cols-[1fr_380px]">
+        <div>
+          <div class="gui-primary-fg text-2xs mb-5 font-mono tracking-widest uppercase">
+            SQL parser / transpiler / optimizer
+          </div>
+          <h1 class="text-5xl/tight font-bold tracking-tight text-balance">
+            A TypeScript port of <span class="gui-primary-fg">SQLGlot</span>.
           </h1>
-        </template>
-        <template #description>
-          <p class="gui-neutral-fg-muted my-2 text-sm lg:mx-56">
-            A JavaScript/TypeScript SQL parser, transpiler, and optimizer ported from <a
+          <p class="gui-neutral-fg-muted mt-5 max-w-[33em] leading-relaxed text-pretty">
+            Parse, transpile, and optimize SQL across 33+ dialects, in the browser
+            or in Node.js. No Python runtime, no ANTLR, no 33 MB bundle.
+          </p>
+
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <div class="gui-primary-border-subtle flex min-w-0 flex-1 items-center gap-3 rounded-[10px] border bg-white px-4 py-3 shadow-xs">
+              <span class="min-w-0 truncate overflow-hidden font-mono text-sm">
+                <span class="gui-primary-fg-muted">$</span> npm install @hdnax/sqlingo.js
+              </span>
+              <div class="flex-1" />
+              <button
+                type="button"
+                class="gui-primary-border-subtle gui-primary-bg-subtle gui-neutral-fg-muted text-2xs shrink-0 cursor-pointer rounded-md border px-3 py-1 font-mono font-medium"
+                @click="copyInstall"
+              >
+                {{ installCopied ? 'copied' : 'copy' }}
+              </button>
+            </div>
+            <a
+              href="/sqlingo.js/playground/"
+              class="gui-primary-solid flex min-h-12 items-center justify-center rounded-[10px] px-5 py-3.5 text-sm font-semibold text-white no-underline"
+            >
+              Try the playground
+            </a>
+          </div>
+        </div>
+
+        <!-- Stats card -->
+        <div class="gui-primary-border-subtle rounded-xl border bg-white px-5 py-1">
+          <div
+            v-for="(stat, i) in stats"
+            :key="stat.label"
+            class="gui-primary-border-subtle flex items-baseline justify-between py-4"
+            :class="i < stats.length - 1 ? 'border-b' : ''"
+          >
+            <span class="gui-neutral-fg-muted text-sm">{{ stat.label }}</span>
+            <span class="font-mono text-sm font-semibold">{{ stat.value }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Code demo -->
+      <GTab
+        class="gui-primary-border-subtle mt-14 mb-20 overflow-hidden rounded-[14px] border bg-white shadow-xs"
+      >
+        <GTabPanel
+          v-for="(demo, name) in demos"
+          :key="name"
+          :name="name.toUpperCase()"
+        >
+          <div class="gui-primary-fg text-2xs px-5 pt-4 pb-2 font-mono font-semibold tracking-widest uppercase">
+            Example
+          </div>
+          <GCodeBlock
+            :id="`demo-${name}`"
+            :code="demo.code"
+            :language="GCodeLanguage.Typescript"
+            :highlight-theme="GHighlightTheme.AtomOne"
+            show-line-numbers
+            hide-header
+            class="border-none bg-white py-2"
+          />
+          <div class="border-t border-(--color-primary-3)">
+            <div class="gui-primary-bg-subtle gui-primary-fg text-2xs px-5 pt-4 pb-2 font-mono font-semibold tracking-widest uppercase">
+              Returns
+            </div>
+            <GCodeBlock
+              :id="`demo-result-${name}`"
+              :code="demo.result"
+              :language="GCodeLanguage.Typescript"
+              :highlight-theme="GHighlightTheme.AtomOne"
+              show-line-numbers
+              hide-header
+              class="border-none bg-white py-2"
+            />
+            <p class="gui-neutral-fg-muted gui-primary-bg-subtle mt-4 px-5 pb-4 text-sm/relaxed">
+              {{ demo.note }}
+            </p>
+          </div>
+        </GTabPanel>
+      </GTab>
+
+      <!-- Dialects -->
+      <div class="mt-20 flex flex-wrap items-baseline gap-4">
+        <h2 class="text-xl font-semibold tracking-tight">
+          Supported dialects
+        </h2>
+        <span class="gui-primary-fg-muted font-mono text-xs">{{ filteredDialects.length }} of 33</span>
+        <div class="flex-1" />
+        <input
+          v-model="dialectQuery"
+          placeholder="Filter dialects..."
+          class="gui-primary-border-subtle gui-neutral-fg w-56 rounded-[9px] border bg-white px-3.5 py-2.5 font-mono text-xs outline-none"
+        >
+      </div>
+      <div class="mt-5 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2">
+        <div
+          v-for="d in filteredDialects"
+          :key="d"
+          class="gui-primary-border-subtle gui-neutral-fg cursor-default rounded-lg border bg-white px-3 py-2.5 font-mono text-xs"
+        >
+          {{ d }}
+        </div>
+      </div>
+
+      <!-- Cards -->
+      <div class="mt-20 grid gap-4 lg:grid-cols-2">
+        <a
+          href="./api-reference/"
+          class="gui-primary-border-subtle gui-neutral-fg block rounded-[14px] border bg-white p-7 no-underline"
+        >
+          <div class="gui-primary-fg text-2xs font-mono tracking-widest uppercase">API reference</div>
+          <div class="mt-3 text-lg font-semibold tracking-tight">Every class and function, typed</div>
+          <div class="gui-neutral-fg-muted mt-2 text-sm/relaxed">Full TypeScript types generated from source, with examples for each expression node.</div>
+          <div class="gui-primary-fg mt-4 text-sm font-semibold">Browse the docs</div>
+        </a>
+        <a
+          href="/sqlingo.js/playground/"
+          class="gui-primary-border-subtle gui-neutral-fg block rounded-[14px] border bg-white p-7 no-underline"
+        >
+          <div class="gui-primary-fg text-2xs font-mono tracking-widest uppercase">Playground</div>
+          <div class="mt-3 text-lg font-semibold tracking-tight">Transpile SQL in the browser</div>
+          <div class="gui-neutral-fg-muted mt-2 text-sm/relaxed">Paste a query, pick two dialects, and watch it convert. Also does SQL to DBML.</div>
+          <div class="gui-primary-fg mt-4 text-sm font-semibold">Open the playground</div>
+        </a>
+      </div>
+
+      <!-- Why this exists -->
+      <div class="gui-primary-border-subtle mt-24 grid gap-14 border-t pt-14 lg:grid-cols-[220px_1fr]">
+        <div>
+          <div class="gui-primary-fg-muted text-2xs sticky top-24 font-mono tracking-widest uppercase">
+            Why this exists
+          </div>
+        </div>
+        <div class="gui-neutral-fg max-w-[34em]">
+          <p class="m-0 leading-loose">
+            I maintain <a
+              href="https://github.com/holistics/dbml"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="gui-primary-fg"
+            >@dbml/core</a>
+            at work, a library that converts between DBML and SQL. Under the hood it uses ANTLR, and honestly it has been a mess.
+          </p>
+
+          <div class="gui-primary-border-subtle my-8 grid overflow-hidden rounded-xl border lg:grid-cols-2">
+            <div class="gui-primary-border-subtle border-b bg-white p-6 lg:border-r lg:border-b-0">
+              <div class="gui-primary-fg-muted text-2xs font-mono tracking-widest uppercase">
+                @dbml/core, ANTLR
+              </div>
+              <div class="gui-danger-fg mt-2.5 font-mono text-2xl font-semibold">
+                33 MB / 5 dialects
+              </div>
+              <div class="gui-neutral-fg-muted mt-2 text-sm/relaxed">
+                Bundle broke CI with OOM errors. Errors read <em>"No viable alternative at..."</em>.
+              </div>
+            </div>
+            <div class="bg-white p-6">
+              <div class="gui-primary-fg-muted text-2xs font-mono tracking-widest uppercase">
+                sqlingo.js
+              </div>
+              <div class="gui-success-fg mt-2.5 font-mono text-2xl font-semibold">
+                33+ dialects
+              </div>
+              <div class="gui-neutral-fg-muted mt-2 text-sm/relaxed">
+                A hand port of SQLGlot's parser. Pure TypeScript, no grammar runtime.
+              </div>
+            </div>
+          </div>
+
+          <p class="mb-5 leading-loose">
+            At a hackathon I stumbled on <a
               href="https://github.com/tobymao/sqlglot"
               target="_blank"
               rel="noopener noreferrer"
+              class="gui-primary-fg"
             >SQLGlot</a>.
-            Parse, transpile, optimize, and run SQL across 33+ dialects in the browser or Node.js.
+            It was amazing that a library like this existed. Too bad it was in Python. I tried Pyodide as a hack, but the runtime is too heavy to ship anywhere that matters.
           </p>
-        </template>
-        <template #footer>
-          <div class="flex justify-center">
-            <GCodeBlock
-              id="installation-code-block"
-              code="npm install @hdnax/sqlingo.js"
-              class="w-96"
-              :language="GCodeLanguage.Bash"
-              :highlight-theme="GHighlightTheme.AtomOne"
-              :show-header="false"
-            />
-          </div>
-          <div class="mt-4 flex justify-center gap-3">
-            <GBadge
-              label="npm"
-              :color="GPillColor.Orange"
-              :size="GBadgeSize.Md"
-              :badge-style="GBadgeStyle.Flat"
-              value="v0.4.2"
-              href="https://www.npmjs.com/package/@hdnax/sqlingo.js"
-            />
-            <GBadge
-              label="license"
-              :color="GPillColor.Green"
-              :size="GBadgeSize.Md"
-              :badge-style="GBadgeStyle.Flat"
-              value="MIT"
-            />
-            <GBadge
-              label="SQLGlot"
-              :color="GPillColor.Blue"
-              :size="GBadgeSize.Md"
-              :badge-style="GBadgeStyle.Flat"
-              value="v28.10.1"
-            />
-          </div>
-        </template>
-      </GHero>
-
-      <section
-        id="quickstart"
-        class="gui-neutral-border gui-neutral-bg-subtle border-y p-10 py-10 lg:px-48"
-      >
-        <div>
-          <h2 class="gui-neutral-fg-muted text-md mb-2 font-medium uppercase">
-            Interactive SQL Examples
-          </h2>
-          <SqlCodeExample />
+          <p class="mb-5 leading-loose">
+            So I started porting it to JavaScript. Two weeks in, <a
+              href="https://github.com/tobilg/polyglot"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="gui-primary-fg"
+            >polyglot</a>
+            was announced (LoL, if only it were sooner). I kept going anyway: I wanted full control over the implementation and a way to stay in sync with upstream.
+          </p>
+          <p class="m-0 leading-loose">
+            sqlingo.js is a close mirror of SQLGlot, file for file. That's the whole trick: catching up with upstream is a diff, not a rewrite.
+          </p>
         </div>
-      </section>
+      </div>
 
-      <section
-        id="features"
-        class="gui-neutral-fg-muted my-10 px-10 lg:px-48"
-      >
-        <div>
-          <h2 class="mb-4 font-medium uppercase">
-            SQL Parser Features
-          </h2>
-          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div
-              v-for="f in features"
-              :key="f.title"
-              class="gui-neutral-border flex flex-col gap-2 rounded-md border p-5"
-            >
-              <div>
-                <GIcon
-                  :name="f.icon"
-                  class="gui-neutral-bg-subtle gui-neutral-border size-5 rounded-md border p-2"
-                />
-              </div>
-              <h3 class="gui-neutral-fg font-bold">
-                {{ f.title }}
-              </h3>
-              <p class="text-sm">
-                {{ f.desc }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="dialects"
-        class="gui-neutral-border gui-neutral-bg-subtle border-y p-10 lg:px-48"
-      >
-        <div>
-          <h2 class="text-md my-4 font-medium uppercase">
-            33+ Supported SQL Dialects
-          </h2>
-          <div class="flex flex-wrap gap-3">
-            <GPill
-              v-for="dialect in dialects"
-              :key="dialect"
-              :prominence="GPillProminence.Primary"
-              :size="GPillSize.Md"
-            >
-              {{ dialect }}
-            </GPill>
-          </div>
-        </div>
-      </section>
-
-      <section class="gui-neutral-fg-muted my-10 px-10 lg:px-48">
-        <div class="flex items-center justify-between gap-2">
-          <div>
-            <h2 class="text-md mb-4 font-medium uppercase">
-              API reference
-            </h2>
-            <p class="text-md">
-              Full TypeScript types, all classes and functions documented.
-            </p>
-          </div>
-          <GButton
-            :prominence="GButtonProminence.Secondary"
-            class="h-10 w-48"
-            @click="goToApiReference"
-          >
-            Browse the docs
-          </GButton>
-        </div>
-      </section>
-
-      <section
-        id="backstory"
-        class="gui-neutral-border gui-neutral-bg-subtle border-y p-10 lg:px-48"
-      >
-        <div>
-          <h2 class="text-md gui-neutral-fg-muted mb-4 font-medium uppercase">
-            Why this exists
-          </h2>
-          <div class="gui-neutral-fg text-md gui-neutral-border flex flex-col gap-2 border-l-3 pl-5">
-            <p>
-              I maintain <a
-                href="https://github.com/holistics/dbml"
-                target="_blank"
-                rel="noopener noreferrer"
-              >@dbml/core</a> at work, a library that supports converting between DBML and SQL.
-              Under the hood it uses ANTLR for parsing, and honestly it has been a mess:
-              the bundle weighs <strong>33 MB</strong> (which actually broke our CI with OOM errors),
-              we can't add more dialects without ballooning it further, and after all that
-              we only support <strong>5 dialects</strong>, with error messages like <em>"No viable alternative at..."</em>.
-            </p>
-            <p>
-              At a hackathon, I stumbled upon <a
-                href="https://github.com/tobymao/sqlglot"
-                target="_blank"
-                rel="noopener noreferrer"
-              >SQLGlot</a>. It was amazing that a library like this existed. Too bad it was in Python.
-            </p>
-            <p>
-              I tried running it through Pyodide as a hack, but the runtime is too heavy to ship anywhere that matters.
-              So I started porting it to JavaScript. Two weeks in,
-              <a
-                href="https://github.com/tobilg/polyglot"
-                target="_blank"
-                rel="noopener noreferrer"
-              >polyglot</a> was announced (LoL! If only it were sooner). I kept doing anyways though, because I wanted full control over the implementation and staying in sync with upstream.
-            </p>
-            <p>
-              sqlingo.js is a close mirror of SQLGlot. This way, I can easily catch up with SQLGlot updates as needed.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="goals"
-        class="gui-neutral-fg-muted my-10 px-10 lg:px-48"
-      >
-        <div>
-          <h2 class="text-md gui-neutral-fg-muted mb-4 font-medium uppercase">
-            Design goals
-          </h2>
-          <div class="text-sm">
-            <div
-              v-for="g in goals"
-              :key="g.title"
-              class="my-3 flex gap-3"
-            >
-              <GPill
-                :prominence="g.isNon ? GProminence.Primary : GProminence.Secondary"
-                :size="GPillSize.Sm"
-              >
-                {{ g.isNon ? 'non-goal' : 'goal' }}
-              </GPill>
-              <div>
-                <h3 class="mb-1 font-medium">
-                  {{ g.title }}
-                </h3>
-                <p>
-                  {{ g.desc }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <div class="h-24" />
 
       <component
         :is="scriptTag"
@@ -238,7 +219,7 @@
           "applicationCategory": "DeveloperApplication",
           "operatingSystem": "All",
           "license": "https://opensource.org/licenses/MIT",
-          "softwareVersion": "0.4.2",
+          "softwareVersion": SQLINGO_VERSION,
           "url": "https://huydo862003.github.io/sqlingo.js/",
           "author": {
             "@type": "Person",
@@ -252,33 +233,26 @@
 
 <script setup lang="ts">
 import {
-  GButton, GButtonProminence,
-  GHero,
-  GIcon, GIconName,
-  GPill, GProminence,
+  ref,
+  computed,
+} from 'vue';
+import {
   GCodeBlock,
   GCodeLanguage,
   GHighlightTheme,
-  GBadge,
-  GPillColor,
-  GBadgeSize,
-  GBadgeStyle,
-  GLogo,
-  GLogoSize,
-  GPillProminence,
-  GPillSize,
+  GTab,
+  GTabPanel,
 } from '@hdnax/genuix';
 import {
   useSeoMeta,
 } from '@unhead/vue';
-import SqlCodeExample from './SqlCodeExample.vue';
 import MainLayout from '@/layout/main/MainLayout.vue';
+import {
+  SQLINGO_VERSION,
+  SQLGLOT_VERSION,
+} from '@/constants';
 
 const scriptTag = 'script';
-
-function goToApiReference () {
-  window.location.href = './api-reference/';
-}
 
 useSeoMeta({
   title: 'Home | sqlingo.js',
@@ -287,58 +261,77 @@ useSeoMeta({
   ogDescription: 'sqlingo.js is the JavaScript/TypeScript port of SQLGlot. It is a SQL parser, transpiler, and optimizer supporting 33+ dialects including BigQuery, Snowflake, and Postgres.',
 });
 
-const features = [
+const installCopied = ref(false);
+
+function copyInstall () {
+  navigator.clipboard?.writeText('npm install @hdnax/sqlingo.js');
+  installCopied.value = true;
+  setTimeout(() => {
+    installCopied.value = false;
+  }, 1400);
+}
+
+const stats = [
   {
-    title: 'SQL Parser',
-    icon: GIconName.TreeStructure,
-    desc: 'Turn any SQL string into a clean AST. A robust JavaScript SQL parser that works across 33+ dialects with real error messages.',
+    label: 'Dialects',
+    value: '33+',
   },
   {
-    title: 'SQL Transpiler',
-    icon: GIconName.ArrowsLeftRight,
-    desc: 'Convert SQL between dialects with our TypeScript SQL transpiler. DuckDB to Hive, Snowflake to BigQuery, and more.',
+    label: 'Tracks SQLGlot',
+    value: `v${SQLGLOT_VERSION}`,
   },
   {
-    title: 'SQL Optimizer',
-    icon: GIconName.MagicWand,
-    desc: 'Predicate pushdown, subquery elimination, and column qualification using the full SQLGlot optimizer ported to TypeScript.',
+    label: 'Runtime',
+    value: 'Browser + Node',
   },
   {
-    title: 'SQL Engine',
-    icon: GIconName.Play,
-    desc: 'Run SQL in-process. A JavaScript SQL engine useful for tests, sandboxes, and in-browser query execution.',
+    label: 'License',
+    value: 'MIT',
   },
 ];
 
-const goals = [
-  {
-    title: 'Close mirror to SQLGlot',
-    desc: 'When SQLGlot fixes a bug or adds a dialect, sqlingo.js ports it. Staying in sync is the main priority.',
-    isNon: false,
-  },
-  {
-    title: 'TypeScript conventions',
-    desc: 'Idiomatic TypeScript throughout, not a mechanical transliteration of Python.',
-    isNon: false,
-  },
-  {
-    title: 'Optimized performance',
-    desc: 'The port is faithful first. Performance can come later.',
-    isNon: true,
-  },
-  {
-    title: 'Optimized bundle size',
-    desc: 'Same reason. Tree-shaking helps, but this is not a priority today.',
-    isNon: true,
-  },
-  {
-    title: 'SQLGlot API compatibility',
-    desc: 'The two libraries share logic, not an interface contract. Making them compatible would be trivial, but it is not a goal.',
-    isNon: true,
-  },
-];
+const demos: Record<string, {
+  code: string;
+  result: string;
+  note: string;
+}> = {
+  parse: {
+    code: `import { parse } from "@hdnax/sqlingo.js";
 
-const dialects = [
+const [ast] = parse(
+  "SELECT a, b FROM t WHERE a > 1",
+  { read: "mysql" },
+);`,
+    result: `Select(
+  expressions=[Column(a), Column(b)],
+  from=From(this=Table(t)),
+  where=Where(this=GT(...)),
+)`,
+    note: 'A full expression tree, mirroring SQLGlot\'s node classes one for one.',
+  },
+  transpile: {
+    code: `import { transpile } from "@hdnax/sqlingo.js";
+
+const [sql] = transpile(
+  "SELECT DATE_SUB(d, INTERVAL 1 DAY) FROM t",
+  { read: "mysql", write: "postgres" },
+);`,
+    result: 'SELECT d - INTERVAL \'1 DAY\' FROM t',
+    note: 'Dialect quirks (quoting, date math, casts) are rewritten for the target.',
+  },
+  optimize: {
+    code: `import { optimize } from "@hdnax/sqlingo.js";
+
+const sql = optimize(
+  "SELECT * FROM t WHERE 1 = 1 AND x > 2",
+  { schema: { t: { x: "INT" } } },
+);`,
+    result: 'SELECT t.x AS x FROM t AS t WHERE t.x > 2',
+    note: 'Qualifies columns, expands stars, and folds constant predicates.',
+  },
+};
+
+const ALL_DIALECTS = [
   'Athena',
   'BigQuery',
   'ClickHouse',
@@ -372,4 +365,13 @@ const dialects = [
   'Trino',
   'TSQL',
 ];
+
+const dialectQuery = ref('');
+const filteredDialects = computed(() => {
+  const query = dialectQuery.value.trim().toLowerCase();
+
+  if (!query) return ALL_DIALECTS;
+
+  return ALL_DIALECTS.filter((dialect) => dialect.toLowerCase().includes(query));
+});
 </script>
