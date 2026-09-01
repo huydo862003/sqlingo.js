@@ -15,7 +15,7 @@
           <p
             class="gui-neutral-fg-muted mt-5 max-w-[33em] leading-relaxed text-pretty"
           >
-            Parse, transpile, and optimize SQL across 33+ dialects, in the
+            Parse, transpile, and optimize SQL across 32 dialects, in the
             browser or in Node.js.
           </p>
 
@@ -115,7 +115,7 @@
         <h2 class="text-xl font-semibold tracking-tight">
           Supported dialects
         </h2>
-        <span class="gui-primary-fg-muted font-mono text-xs">{{ filteredDialects.length }} of 33</span>
+        <span class="gui-primary-fg-muted font-mono text-xs">{{ filteredDialects.length }} of 32</span>
         <div class="flex-1" />
         <input
           v-model="dialectQuery"
@@ -233,7 +233,7 @@
               <div
                 class="gui-success-fg mt-2.5 font-mono text-2xl font-semibold"
               >
-                33+ dialects
+                32 dialects
               </div>
               <div class="gui-neutral-fg-muted mt-2 text-sm/relaxed">
                 A hand port of SQLGlot's parser. Pure TypeScript, no grammar
@@ -282,7 +282,7 @@
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
           "name": "sqlingo.js",
-          "description": "sqlingo.js is a JavaScript/TypeScript port of SQLGlot, a SQL parser, transpiler, and optimizer supporting 33+ dialects.",
+          "description": "sqlingo.js is a JavaScript/TypeScript port of SQLGlot, a SQL parser, transpiler, and optimizer supporting 32 dialects.",
           "applicationCategory": "DeveloperApplication",
           "operatingSystem": "All",
           "license": "https://opensource.org/licenses/MIT",
@@ -323,9 +323,9 @@ useSeoMeta({
   title: 'Home | sqlingo.js',
   ogTitle: 'Home | sqlingo.js',
   description:
-    'sqlingo.js is the JavaScript/TypeScript port of SQLGlot. It is a SQL parser, transpiler, and optimizer supporting 33+ dialects including BigQuery, Snowflake, and Postgres.',
+    'sqlingo.js is the JavaScript/TypeScript port of SQLGlot. It is a SQL parser, transpiler, and optimizer supporting 32 dialects including BigQuery, Snowflake, and Postgres.',
   ogDescription:
-    'sqlingo.js is the JavaScript/TypeScript port of SQLGlot. It is a SQL parser, transpiler, and optimizer supporting 33+ dialects including BigQuery, Snowflake, and Postgres.',
+    'sqlingo.js is the JavaScript/TypeScript port of SQLGlot. It is a SQL parser, transpiler, and optimizer supporting 32 dialects including BigQuery, Snowflake, and Postgres.',
 });
 
 const installCopied = ref(false);
@@ -341,7 +341,7 @@ function copyInstall () {
 const stats = [
   {
     label: 'Dialects',
-    value: '33+',
+    value: '32',
   },
   {
     label: 'Tracks SQLGlot',

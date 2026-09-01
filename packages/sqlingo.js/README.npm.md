@@ -7,7 +7,7 @@
 
 A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot) which is compatible with browser and Node runtimes.
 
-This package allows you to parse, transpile, optimize, and execute SQL across **33+ dialects** in JavaScript.
+This package allows you to parse, transpile, optimize, and execute SQL across **32 dialects** in JavaScript.
 
 WARNING: This package is still in alpha.
   - Although the SQLGlot tests have all passed, but finding contrived failures may require me to use this package extensively myself.
@@ -21,7 +21,7 @@ NOTICE: AI is not the decision maker, designer or maintainer for this project. I
 
 ## Features
 
-- 33+ SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more
+- 32 SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more
 - Full SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution
 - Pure JavaScript: no need for WASM or native dependencies
 - TypeScript-first: full type definitions included
