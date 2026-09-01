@@ -2,18 +2,18 @@
   <MainLayout>
     <main class="mx-auto max-w-[1080px] px-7">
       <!-- Hero -->
-      <div class="mt-10 items-start">
+      <div class="mt-8 items-start">
         <div>
           <div
-            class="gui-primary-fg text-2xs mb-5 font-mono tracking-widest uppercase"
+            class="gui-primary-fg text-2xs mt-6 font-mono tracking-widest uppercase"
           >
             SQL parser / transpiler / optimizer
           </div>
-          <h1 class="text-5xl/tight font-bold tracking-tight text-balance">
+          <h1 class="mt-6 text-5xl/tight font-bold tracking-tight text-balance">
             A TypeScript port of <span class="gui-primary-fg">SQLGlot</span>.
           </h1>
           <p
-            class="gui-neutral-fg-muted mt-5 max-w-[33em] leading-relaxed text-pretty"
+            class="gui-neutral-fg-muted mt-6 max-w-[33em] leading-relaxed text-pretty"
           >
             Parse, transpile, and optimize SQL across 32 dialects, in the
             browser or in Node.js.
@@ -31,7 +31,7 @@
             <div class="flex-1" />
             <button
               type="button"
-              class="gui-primary-border-subtle gui-primary-bg-subtle gui-neutral-fg-muted text-2xs shrink-0 cursor-pointer rounded-md border px-3 py-1 font-mono font-medium"
+              class="gui-primary-border-subtle gui-primary-bg-subtle gui-primary-fg text-2xs shrink-0 cursor-pointer rounded-md border px-3 py-1 font-mono font-medium"
               @click="copyInstall"
             >
               {{ installCopied ? "copied" : "copy" }}
@@ -48,7 +48,7 @@
 
       <!-- Code demo -->
       <GTab
-        class="gui-primary-border-subtle mb-20 overflow-hidden rounded-[14px] border bg-white shadow-xs md:mt-14"
+        class="gui-primary-border-subtle mt-8 overflow-hidden rounded-[14px] border bg-white shadow-xs md:mt-14"
       >
         <GTabPanel
           v-for="(demo, name) in demos"
@@ -56,7 +56,7 @@
           :name="name.toUpperCase()"
         >
           <div
-            class="gui-primary-fg text-2xs px-5 pt-4 pb-2 font-mono font-semibold tracking-widest uppercase"
+            class="gui-primary-fg text-2xs mt-6 px-5 pb-2 font-mono font-semibold tracking-widest uppercase"
           >
             Example
           </div>
@@ -94,7 +94,7 @@
       </GTab>
 
       <!-- Dialects -->
-      <div class="mt-20 flex flex-wrap items-baseline gap-4">
+      <div class="mt-8 flex flex-wrap items-baseline gap-4">
         <h2 class="text-xl font-semibold tracking-tight">
           Supported dialects
         </h2>
@@ -119,7 +119,7 @@
       </div>
 
       <!-- Cards -->
-      <div class="mt-20 grid gap-4 lg:grid-cols-2">
+      <div class="mt-8 grid gap-4 lg:grid-cols-2">
         <a
           href="./api-reference/"
           class="gui-primary-border-subtle gui-neutral-fg block rounded-[14px] border bg-white p-7 no-underline"
@@ -164,16 +164,16 @@
 
       <!-- Why this exists -->
       <div
-        class="gui-primary-border-subtle mt-24 grid gap-14 border-t pt-14 lg:grid-cols-[220px_1fr]"
+        class="gui-primary-border-subtle mt-8"
       >
         <div>
           <div
-            class="gui-primary-fg-muted text-2xs sticky top-24 font-mono tracking-widest uppercase"
+            class="gui-primary-fg-muted text-2xs font-mono tracking-widest uppercase"
           >
             Why this exists
           </div>
         </div>
-        <div class="gui-neutral-fg max-w-[34em]">
+        <div class="gui-neutral-fg mt-6 max-w-[34em]">
           <p class="m-0 leading-loose">
             I maintain
             <a
@@ -183,49 +183,16 @@
               class="gui-primary-fg"
             >@dbml/core</a>
             at work, a library that converts between DBML and SQL. Under the
-            hood it uses ANTLR, and honestly it has been a mess.
+            hood it uses ANTLR, and honestly it has been a mess:
+            <ul class="mt-4 ml-5 list-disc">
+              <li><code>@dbml/core</code> is 33MB, which is quite insane to be honest. It actually broke our CI with OOM errors.</li>
+              <li>We can't add more dialects without making the bundle even larger.</li>
+              <li>The parser is feature-incomplete and spits out user-unfriendly error messages like <code>No viable alternative at....</code></li>
+              <li>After all that, we only support 5 dialects.</li>
+            </ul>
           </p>
 
-          <div
-            class="gui-primary-border-subtle my-8 grid overflow-hidden rounded-xl border lg:grid-cols-2"
-          >
-            <div
-              class="gui-primary-border-subtle border-b bg-white p-6 lg:border-r lg:border-b-0"
-            >
-              <div
-                class="gui-primary-fg-muted text-2xs font-mono tracking-widest uppercase"
-              >
-                @dbml/core, ANTLR
-              </div>
-              <div
-                class="gui-danger-fg mt-2.5 font-mono text-2xl font-semibold"
-              >
-                33 MB / 5 dialects
-              </div>
-              <div class="gui-neutral-fg-muted mt-2 text-sm/relaxed">
-                Bundle broke CI with OOM errors. Errors read
-                <em>"No viable alternative at..."</em>.
-              </div>
-            </div>
-            <div class="bg-white p-6">
-              <div
-                class="gui-primary-fg-muted text-2xs font-mono tracking-widest uppercase"
-              >
-                sqlingo.js
-              </div>
-              <div
-                class="gui-success-fg mt-2.5 font-mono text-2xl font-semibold"
-              >
-                32 dialects
-              </div>
-              <div class="gui-neutral-fg-muted mt-2 text-sm/relaxed">
-                A hand port of SQLGlot's parser. Pure TypeScript, no grammar
-                runtime.
-              </div>
-            </div>
-          </div>
-
-          <p class="mb-5 leading-loose">
+          <p class="mt-4 leading-loose">
             At a hackathon I stumbled on
             <a
               href="https://github.com/tobymao/sqlglot"
@@ -236,7 +203,7 @@
             in Python. I tried Pyodide as a hack, but the runtime is too heavy
             to ship anywhere that matters.
           </p>
-          <p class="mb-5 leading-loose">
+          <p class="mt-4 leading-loose">
             So I started porting it to JavaScript. Two weeks in,
             <a
               href="https://github.com/tobilg/polyglot"
@@ -248,14 +215,14 @@
             wanted full control over the implementation and a way to stay in
             sync with upstream.
           </p>
-          <p class="m-0 leading-loose">
+          <p class="mt-4 leading-loose">
             sqlingo.js is a close mirror of SQLGlot, file for file. That's the
             whole trick: catching up with upstream is a diff, not a rewrite.
           </p>
         </div>
       </div>
 
-      <div class="h-24" />
+      <div class="h-8" />
 
       <component
         :is="scriptTag"
@@ -297,7 +264,7 @@ import {
 } from '@unhead/vue';
 import MainLayout from '@/layout/main/MainLayout.vue';
 import {
-  SQLINGO_VERSION, SQLGLOT_VERSION,
+  SQLINGO_VERSION,
 } from '@/constants';
 
 const scriptTag = 'script';
@@ -320,25 +287,6 @@ function copyInstall () {
     installCopied.value = false;
   }, 1400);
 }
-
-const stats = [
-  {
-    label: 'Dialects',
-    value: '32',
-  },
-  {
-    label: 'Tracks SQLGlot',
-    value: `v${SQLGLOT_VERSION}`,
-  },
-  {
-    label: 'Runtime',
-    value: 'Browser + Node',
-  },
-  {
-    label: 'License',
-    value: 'MIT',
-  },
-];
 
 const demos: Record<
   string,
