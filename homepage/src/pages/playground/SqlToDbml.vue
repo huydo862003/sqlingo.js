@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
-    <div class="flex flex-col gap-4 md:flex-row">
-      <div class="gui-primary-border-subtle flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div class="gui-primary-border-subtle flex min-w-0 flex-col overflow-hidden rounded-xl border shadow-xs">
         <div class="gui-primary-border-subtle gui-primary-bg-subtle flex items-center justify-between border-b px-4 py-3">
           <div class="gap-sm flex items-center">
             <span class="gui-primary-fg text-2xs font-mono font-semibold tracking-widest uppercase">SQL</span>
@@ -29,7 +29,7 @@
         <MonacoEditor v-model="sqlInput" />
       </div>
 
-      <div class="gui-primary-border-subtle flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
+      <div class="gui-primary-border-subtle flex min-w-0 flex-col overflow-hidden rounded-xl border shadow-xs">
         <div class="gui-primary-border-subtle gui-primary-bg-subtle flex items-center justify-between border-b px-4 py-3">
           <span class="gui-primary-fg text-2xs font-mono font-semibold tracking-widest uppercase">DBML</span>
           <GButton

@@ -1,16 +1,14 @@
 <template>
-  <MainLayout :breadcrumb="navBreadcrumb">
-    <main class="px-4">
-      <div class="mt-8 mb-6 flex flex-wrap items-end gap-5">
-        <div>
-          <h1 class="m-0 text-3xl font-bold tracking-tight">
-            Playground
-          </h1>
-          <p class="gui-neutral-fg-muted mt-2 text-sm">
-            Everything runs locally in your browser. Nothing is sent anywhere.
-          </p>
-        </div>
-        <div class="gui-primary-border flex rounded-[10px] border bg-(--color-primary-3) p-1">
+  <MainLayout>
+    <main class="px-7">
+      <div class="mt-8 mb-6">
+        <h1 class="m-0 text-3xl font-bold tracking-tight">
+          Playground
+        </h1>
+        <p class="gui-neutral-fg-muted mt-2 text-sm">
+          Everything runs locally in your browser. Nothing is sent anywhere.
+        </p>
+        <div class="gui-primary-border mt-4 inline-flex rounded-[10px] border bg-(--color-primary-3) p-1">
           <button
             type="button"
             class="cursor-pointer rounded-[7px] border-none px-5 py-2.5 text-sm font-semibold"
@@ -73,15 +71,6 @@ useSeoMeta({
   description: 'Try sqlingo.js in your browser. Convert between SQL dialects and DBML.',
   ogDescription: 'Try sqlingo.js in your browser. Convert between SQL dialects and DBML.',
 });
-
-const base = import.meta.env.BASE_URL;
-
-const navBreadcrumb = computed(() => [
-  {
-    label: 'Playground',
-    href: `${base}playground/`,
-  },
-]);
 
 const store = usePlaygroundStore();
 const tab = ref(store.tab);

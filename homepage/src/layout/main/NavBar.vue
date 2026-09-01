@@ -11,10 +11,6 @@
           class="size-8 rounded-md"
         >
         <span class="gui-primary-fg text-sm font-semibold tracking-tight">sqlingo.js</span>
-        <span
-          v-if="!breadcrumb.length"
-          class="gui-primary-border-subtle gui-primary-fg-muted rounded-[5px] border px-1.5 py-0.5 font-mono text-[10px]"
-        >v{{ SQLINGO_VERSION }}</span>
       </RouterLink>
 
       <GBreadcrumb v-if="breadcrumb.length">
@@ -69,10 +65,6 @@ import {
 import {
   GBreadcrumb, GBreadcrumbItem,
 } from '@hdnax/genuix';
-import {
-  SQLINGO_VERSION,
-} from '@/constants';
-
 const {
   breadcrumb = [],
 } = defineProps<{

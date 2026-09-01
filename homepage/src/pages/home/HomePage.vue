@@ -4,25 +4,36 @@
       <!-- Hero -->
       <div class="mt-8 items-start">
         <div>
-          <div
-            class="gui-primary-fg text-2xs mt-6 font-mono tracking-widest uppercase"
-          >
-            SQL parser / transpiler / optimizer
+          <div class="mt-6 flex flex-wrap items-center gap-2">
+            <GBadge
+              label="npm"
+              :value="`v${SQLINGO_VERSION}`"
+              :color="GPillColor.Blue"
+              :size="GBadgeSize.Lg"
+              href="https://www.npmjs.com/package/@hdnax/sqlingo.js"
+            />
+            <GBadge
+              label="tracks sqlglot"
+              :value="`v${SQLGLOT_VERSION}`"
+              :color="GPillColor.Violet"
+              :size="GBadgeSize.Lg"
+              href="https://github.com/tobymao/sqlglot"
+            />
           </div>
           <h1 class="mt-6 text-5xl/tight font-bold tracking-tight text-balance">
             A TypeScript port of <span class="gui-primary-fg">SQLGlot</span>.
           </h1>
           <p
-            class="gui-neutral-fg-muted mt-6 max-w-[33em] leading-relaxed text-pretty"
+            class="gui-neutral-fg-muted mt-4 max-w-[33em] leading-relaxed text-pretty"
           >
             Parse, transpile, and optimize SQL across 32 dialects, in the
             browser or in Node.js.
           </p>
         </div>
 
-        <div class="mt-5 flex flex-wrap items-center gap-3">
+        <div class="mt-4 flex flex-wrap items-center gap-3 max-w-[33em]">
           <div
-            class="gui-primary-border-subtle flex min-w-0 flex-1 items-center gap-3 rounded-[10px] border bg-white px-4 py-3 shadow-xs"
+            class="gui-primary-border-subtle flex w-full items-center gap-3 rounded-[10px] border bg-white px-5 py-3 shadow-xs"
           >
             <span class="min-w-0 truncate overflow-hidden font-mono text-sm">
               <span class="gui-primary-fg-muted">$</span> npm install
@@ -107,7 +118,7 @@
         >
       </div>
       <div
-        class="mt-5 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2"
+        class="mt-6 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2"
       >
         <div
           v-for="d in filteredDialects"
@@ -253,6 +264,9 @@ import {
   ref, computed,
 } from 'vue';
 import {
+  GBadge,
+  GBadgeSize,
+  GPillColor,
   GCodeBlock,
   GCodeLanguage,
   GHighlightTheme,
@@ -265,6 +279,7 @@ import {
 import MainLayout from '@/layout/main/MainLayout.vue';
 import {
   SQLINGO_VERSION,
+  SQLGLOT_VERSION,
 } from '@/constants';
 
 const scriptTag = 'script';
