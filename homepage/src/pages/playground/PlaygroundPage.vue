@@ -1,7 +1,7 @@
 <template>
   <MainLayout :breadcrumb="navBreadcrumb">
     <main class="px-4">
-      <div class="flex flex-wrap items-end gap-5 pt-9 pb-5">
+      <div class="mt-8 mb-6 flex flex-wrap items-end gap-5">
         <div>
           <h1 class="m-0 text-3xl font-bold tracking-tight">
             Playground
@@ -10,7 +10,6 @@
             Everything runs locally in your browser. Nothing is sent anywhere.
           </p>
         </div>
-        <div class="flex-1" />
         <div class="gui-primary-border flex rounded-[10px] border bg-(--color-primary-3) p-1">
           <button
             type="button"
@@ -47,7 +46,7 @@
         <SqlToDbml />
       </div>
 
-      <div class="h-20" />
+      <div class="mt-8" />
     </main>
   </MainLayout>
 </template>
