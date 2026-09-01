@@ -38,7 +38,7 @@
             </div>
             <a
               href="/sqlingo.js/playground/"
-              class="gui-primary-solid flex min-h-12 items-center justify-center rounded-[10px] px-5 py-3.5 text-sm font-semibold text-white no-underline"
+              class="gui-primary-solid gui-primary-fg flex min-h-12 items-center justify-center rounded-[10px] px-5 py-3.5 text-sm font-semibold no-underline"
             >
               Try the playground
             </a>
