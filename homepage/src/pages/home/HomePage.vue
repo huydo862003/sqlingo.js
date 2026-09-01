@@ -2,7 +2,7 @@
   <MainLayout>
     <main class="mx-auto max-w-[1080px] px-7">
       <!-- Hero -->
-      <div class="grid items-start gap-16 py-20 lg:grid-cols-[1fr_380px]">
+      <div class="mt-10 items-start">
         <div>
           <div
             class="gui-primary-fg text-2xs mb-5 font-mono tracking-widest uppercase"
@@ -18,54 +18,37 @@
             Parse, transpile, and optimize SQL across 32 dialects, in the
             browser or in Node.js.
           </p>
-
-          <div class="mt-8 flex flex-wrap items-center gap-3">
-            <div
-              class="gui-primary-border-subtle flex min-w-0 flex-1 items-center gap-3 rounded-[10px] border bg-white px-4 py-3 shadow-xs"
-            >
-              <span class="min-w-0 truncate overflow-hidden font-mono text-sm">
-                <span class="gui-primary-fg-muted">$</span> npm install
-                @hdnax/sqlingo.js
-              </span>
-              <div class="flex-1" />
-              <button
-                type="button"
-                class="gui-primary-border-subtle gui-primary-bg-subtle gui-neutral-fg-muted text-2xs shrink-0 cursor-pointer rounded-md border px-3 py-1 font-mono font-medium"
-                @click="copyInstall"
-              >
-                {{ installCopied ? "copied" : "copy" }}
-              </button>
-            </div>
-            <a
-              href="/sqlingo.js/playground/"
-              class="gui-primary-solid gui-primary-fg flex min-h-12 items-center justify-center rounded-[10px] px-5 py-3.5 text-sm font-semibold no-underline"
-            >
-              Try the playground
-            </a>
-          </div>
         </div>
 
-        <!-- Stats card -->
-        <div
-          class="gui-primary-border-subtle hidden rounded-xl border bg-white px-5 py-1 lg:block"
-        >
+        <div class="mt-5 flex flex-wrap items-center gap-3">
           <div
-            v-for="(stat, i) in stats"
-            :key="stat.label"
-            class="gui-primary-border-subtle flex items-baseline justify-between py-4"
-            :class="i < stats.length - 1 ? 'border-b' : ''"
+            class="gui-primary-border-subtle flex min-w-0 flex-1 items-center gap-3 rounded-[10px] border bg-white px-4 py-3 shadow-xs"
           >
-            <span class="gui-neutral-fg-muted text-sm">{{ stat.label }}</span>
-            <span class="font-mono text-sm font-semibold">{{
-              stat.value
-            }}</span>
+            <span class="min-w-0 truncate overflow-hidden font-mono text-sm">
+              <span class="gui-primary-fg-muted">$</span> npm install
+              @hdnax/sqlingo.js
+            </span>
+            <div class="flex-1" />
+            <button
+              type="button"
+              class="gui-primary-border-subtle gui-primary-bg-subtle gui-neutral-fg-muted text-2xs shrink-0 cursor-pointer rounded-md border px-3 py-1 font-mono font-medium"
+              @click="copyInstall"
+            >
+              {{ installCopied ? "copied" : "copy" }}
+            </button>
           </div>
+          <a
+            href="/sqlingo.js/playground/"
+            class="gui-primary-solid gui-primary-fg flex min-h-12 items-center justify-center rounded-[10px] px-5 py-3.5 text-sm font-semibold no-underline"
+          >
+            Try the playground
+          </a>
         </div>
       </div>
 
       <!-- Code demo -->
       <GTab
-        class="gui-primary-border-subtle mb-20 overflow-hidden rounded-[14px] border bg-white shadow-xs lg:mt-14"
+        class="gui-primary-border-subtle mb-20 overflow-hidden rounded-[14px] border bg-white shadow-xs md:mt-14"
       >
         <GTabPanel
           v-for="(demo, name) in demos"
