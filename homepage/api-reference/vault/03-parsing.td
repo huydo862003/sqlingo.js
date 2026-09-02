@@ -1,6 +1,10 @@
+---
+_icon: icon.file_code
+---
+
 ## `parse(sql, options?)`
 
-Parse SQL into an array of AST expressions.
+Parse SQL into an array of AST expressions, one per statement.
 
 ```typescript
 import { parse } from "@hdnax/sqlingo.js";
@@ -9,23 +13,19 @@ import { MySQL } from "@hdnax/sqlingo.js/mysql";
 const [ast] = parse("SELECT a, b FROM t", { read: MySQL });
 ```
 
-### Parameters
-
 | Name | Type | Description |
 |------|------|-------------|
 | `sql` | `string` | The SQL string to parse |
 | `options.read` | `Dialect class or string` | Source dialect |
 | `options.dialect` | `Dialect class or string` | Alias for `read` |
 
-### Returns
-
-`Expression[]` - Array of parsed expressions, one per statement.
+Returns `Expression[]`,one expression per statement.
 
 ---
 
 ## `parseOne(sql, options?)`
 
-Parse a single SQL statement. Returns a `BlockExpr` if multiple statements are found.
+Parse a single SQL statement. Throws if zero statements are found. Returns a `BlockExpr` if multiple statements are found.
 
 ```typescript
 import { parseOne } from "@hdnax/sqlingo.js";
@@ -33,6 +33,8 @@ import { parseOne } from "@hdnax/sqlingo.js";
 const ast = parseOne("SELECT 1 + 1");
 ast.sql(); // "SELECT 1 + 1"
 ```
+
+Same parameters as `parse`. Returns a single `Expression`.
 
 ---
 
@@ -52,11 +54,11 @@ const [sql] = transpile(
 // "SELECT d - INTERVAL '1 DAY' FROM t"
 ```
 
-### Parameters
-
 | Name | Type | Description |
 |------|------|-------------|
 | `sql` | `string` | The SQL string to transpile |
 | `options.read` | `Dialect class or string` | Source dialect |
 | `options.write` | `Dialect class or string` | Target dialect |
 | `options.pretty` | `boolean` | Pretty-print output |
+
+Returns `string[]`,one SQL string per statement, in the target dialect.

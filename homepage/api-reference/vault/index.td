@@ -1,16 +1,21 @@
-A SQL parser, transpiler, and optimizer supporting 32 dialects.
+---
+_icon: icon.book
+---
 
-## Core
+A SQL parser, transpiler, and optimizer for JavaScript/TypeScript, supporting 32 dialects.
 
-- [parse / parseOne / transpile](core/parsing) - Parse and transpile SQL
-- [optimize](core/optimize) - Optimize SQL queries
-- [Dialect](core/dialect) - Dialect registration and configuration
+Zero dependencies. Runs in browsers and Node.js.
 
-## Expressions
+## Get started
 
-- [Expression](expressions/expression) - Base expression class
-- [Builder helpers](expressions/builders) - `select()`, `column()`, `condition()`, etc.
+- [Quick start](01-quick-start) - Install and run your first query in under a minute
+- [Guide](02-guide) - Learn parsing, transpiling, building, and optimizing SQL
 
-## Dialects
+## Core API
 
-- [Available dialects](dialects/index) - All 32 supported dialects
+- [Parsing and transpiling](03-parsing) - `parse`, `parseOne`, `transpile`
+- [Optimization](04-optimize) - `optimize` queries with schema information
+- [Dialect](05-dialect) - Dialect registration and tree-shaking
+- [Expression](06-expression) - The base AST node class
+- [Builders](07-builders) - Fluent API for building SQL programmatically
+- [Supported dialects](08-dialects) - All 32 SQL dialects

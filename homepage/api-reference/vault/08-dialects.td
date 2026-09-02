@@ -1,4 +1,8 @@
-32 SQL dialects, each importable as a standalone module:
+---
+_icon: icon.database
+---
+
+32 SQL dialects, each importable as a standalone module for tree-shaking.
 
 | Dialect | Import |
 |---------|--------|

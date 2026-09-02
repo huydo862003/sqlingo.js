@@ -1,4 +1,8 @@
-Fluent API for building SQL programmatically.
+---
+_icon: icon.hammer
+---
+
+Fluent API for building SQL programmatically instead of concatenating strings.
 
 ## `select(...columns)`
 
@@ -18,14 +22,16 @@ condition("x = 1").and("y = 2").or("z = 3").sql();
 // "(x = 1 AND y = 2) OR z = 3"
 ```
 
-## Other helpers
+## All helpers
 
 | Function | Description | Example |
 |----------|-------------|---------|
-| `column(opts)` | Build a Column | `column({ col: "x", table: "t" })` |
-| `table(name)` | Build a Table | `table("users")` |
-| `func(name, ...args)` | Build a function call | `func("COALESCE", "x", 1)` |
-| `case_()` | Build a CASE expression | `case_().when("x=1", "a").else("b")` |
+| `select(...cols)` | SELECT statement | `select("x", "y").from("t")` |
+| `condition(sql)` | Composable condition | `condition("x = 1").and("y = 2")` |
+| `column(opts)` | Column reference | `column({ col: "x", table: "t" })` |
+| `table(name)` | Table reference | `table("users")` |
+| `func(name, ...args)` | Function call | `func("COALESCE", "x", 1)` |
+| `case_()` | CASE expression | `case_().when("x=1", "a").else("b")` |
 | `and(conditions)` | AND multiple conditions | `and(["x=1", "y=2"])` |
 | `or(conditions)` | OR multiple conditions | `or(["x=1", "y=2"])` |
 | `not(condition)` | Negate a condition | `not("x=1")` |
