@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.6.1
+
+### Patch Changes
+
+- e6fdbfa: Update new API in readme
+
 ## 0.6.0
 
 ### BREAKING CHANGES
