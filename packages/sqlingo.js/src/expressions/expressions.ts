@@ -24515,6 +24515,10 @@ export class JsonbContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
   constructor (args: JsonbContainsExprArgs = {}) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
 export type JsonbContainsAnyTopKeysExprArgs = Merge<[
@@ -24947,6 +24951,10 @@ export class JsonArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExp
 
   constructor (args: JsonArrayContainsExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -31788,6 +31796,10 @@ export class AndExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   constructor (args: AndExprArgs = {}) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
 export type OrExprArgs = Merge<[
@@ -31813,6 +31825,10 @@ export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
   constructor (args: OrExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -31846,6 +31862,10 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
   constructor (args: XorExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
