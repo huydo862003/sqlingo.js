@@ -4,8 +4,8 @@
     <div class="flex-1">
       <slot />
     </div>
-    <footer class="gui-primary-border-subtle gui-primary-bg-subtle shrink-0 border-t">
-      <div class="mx-auto flex max-w-[1080px] flex-wrap items-center gap-3 px-7 py-6">
+    <footer class="gui-primary-border-subtle gui-primary-bg-hover shrink-0 border-t">
+      <div class="flex flex-wrap items-center gap-3 px-7 py-6">
         <span class="gui-neutral-fg-muted text-sm">
           sqlingo.js is
           <a

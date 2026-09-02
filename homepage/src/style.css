@@ -6,7 +6,7 @@
 @variant dark (&:where(.dark, .dark *));
 
 body {
-  background: var(--gui-primary-bg-subtle);
+  background: var(--gui-primary-bg);
   color: var(--gui-neutral-fg);
   -webkit-font-smoothing: antialiased;
 }

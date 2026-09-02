@@ -1,6 +1,6 @@
 <template>
-  <nav class="gui-primary-border-subtle gui-primary-bg sticky top-0 z-20 border-b backdrop-blur-[10px]">
-    <div class="mx-auto flex h-14 max-w-[1080px] items-center gap-7 px-7">
+  <nav class="gui-primary-border-subtle gui-primary-bg-hover sticky top-0 z-20 border-b">
+    <div class="flex h-14 items-center gap-7 px-7">
       <RouterLink
         to="/"
         class="gui-neutral-fg flex items-center gap-2.5 no-underline"
@@ -29,19 +29,21 @@
       <div class="flex items-center gap-1">
         <RouterLink
           to="/"
-          class="gui-neutral-fg-muted rounded-[7px] px-3 py-1.5 text-sm font-medium no-underline"
+          class="rounded-[7px] px-3 py-1.5 text-sm no-underline"
+          :class="$route.path === '/' ? 'gui-neutral-fg font-bold' : 'gui-neutral-fg-muted font-medium'"
         >
           Home
         </RouterLink>
         <RouterLink
           to="/playground/"
-          class="gui-neutral-fg-muted rounded-[7px] px-3 py-1.5 text-sm font-medium no-underline"
+          class="rounded-[7px] px-3 py-1.5 text-sm no-underline"
+          :class="$route.path.startsWith('/playground') ? 'gui-neutral-fg font-bold' : 'gui-neutral-fg-muted font-medium'"
         >
           Playground
         </RouterLink>
         <a
-          href="./api-reference/"
-          class="gui-neutral-fg-muted hidden rounded-[7px] px-3 py-1.5 text-sm font-medium no-underline sm:block"
+          :href="`${base}api-reference/`"
+          class="gui-neutral-fg-muted rounded-[7px] px-3 py-1.5 text-sm font-medium no-underline"
         >
           API reference
         </a>

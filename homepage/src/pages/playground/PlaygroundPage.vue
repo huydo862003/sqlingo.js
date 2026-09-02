@@ -25,6 +25,18 @@
           >
             SQL to DBML
           </button>
+          <GTooltip placement="bottom">
+            <span class="gui-primary-fg-muted flex cursor-help items-center px-1.5 text-xs font-bold">?</span>
+            <template #popper>
+              Paste CREATE TABLE SQL and get a
+              <a
+                href="https://dbml.dbdiagram.io/docs/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="gui-primary-fg font-semibold"
+              >DBML</a> schema back.
+            </template>
+          </GTooltip>
         </div>
       </div>
 
@@ -32,15 +44,6 @@
         <SqlTranspile />
       </div>
       <div v-else>
-        <p class="gui-neutral-fg-muted mb-3 text-sm">
-          Paste CREATE TABLE SQL and get a
-          <a
-            href="https://dbml.dbdiagram.io/docs/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="gui-primary-fg no-underline hover:underline"
-          >DBML</a> schema back.
-        </p>
         <SqlToDbml />
       </div>
 
@@ -57,6 +60,9 @@ import {
 import {
   useSeoMeta,
 } from '@unhead/vue';
+import {
+  GTooltip,
+} from '@hdnax/genuix';
 import SqlToDbml from './SqlToDbml.vue';
 import SqlTranspile from './SqlTranspile.vue';
 import MainLayout from '@/layout/main/MainLayout.vue';

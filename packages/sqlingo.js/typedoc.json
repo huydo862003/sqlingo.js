@@ -38,7 +38,8 @@
     "includeGroups": true
   },
   "navigationLinks": {
-    "GitHub": "https://github.com/tobymao/sqlglot",
+    "Home": "https://huydo862003.github.io/sqlingo.js/",
+    "GitHub": "https://github.com/huydo862003/sqlingo.js",
     "Original SQLGlot": "https://sqlglot.com"
   },
   "name": "@hdnax/sqlingo.js",
