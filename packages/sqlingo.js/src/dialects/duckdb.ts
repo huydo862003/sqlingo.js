@@ -6845,5 +6845,3 @@ export class DuckDB extends Dialect {
   static Parser = DuckDBParser;
   static Generator = DuckDBGenerator;
 }
-
-Dialect.register(Dialects.DUCKDB, DuckDB);

@@ -364,6 +364,7 @@ export type DialectType = string | Dialect | typeof Dialect;
  */
 export class Dialect {
   static DIALECT_NAME: Dialects | string = Dialects.DIALECT;
+  static DIALECT_ALIASES?: string[];
 
   /** The base index offset for arrays */
   static INDEX_OFFSET = 0;
@@ -1165,10 +1166,27 @@ export class Dialect {
     return false;
   }
 
-  private static registry: Map<string, typeof Dialect> = new Map();
-  // If a subclass wants `Dialect.get` or `Dialect.getOrRaise` to recognize it, it should call this method
-  static register (name: string, dialect: typeof Dialect) {
-    this.registry.set(name, dialect);
+  /** @internal */
+  static registry: Map<string, typeof Dialect> = new Map();
+
+  /**
+   * Register dialect classes for string-based lookup.
+   *
+   * @example
+   * ```ts
+   * import { MySQL } from "@hdnax/sqlingo.js/mysql";
+   * import { Postgres } from "@hdnax/sqlingo.js/postgres";
+   * Dialect.register(MySQL, Postgres);
+   * ```
+   */
+  static register (...dialects: (typeof Dialect)[]) {
+    for (const dialect of dialects) {
+      this.registry.set(dialect.DIALECT_NAME, dialect);
+
+      for (const alias of dialect.DIALECT_ALIASES ?? []) {
+        this.registry.set(alias, dialect);
+      }
+    }
   }
 
   /**
@@ -1588,7 +1606,6 @@ export class Dialect {
 }
 
 // Register the base Dialect
-Dialect.register(Dialects.DIALECT, Dialect);
 
 /**
  * Creates a function that renames a function call

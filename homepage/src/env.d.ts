@@ -9,14 +9,3 @@ declare module '*.vue' {
 
   export default component;
 }
-
-interface ReflectionNode {
-  kind: number;
-  children?: ReflectionNode[];
-}
-
-declare module 'virtual:typedoc' {
-  const data: ReflectionNode | null;
-
-  export default data;
-}

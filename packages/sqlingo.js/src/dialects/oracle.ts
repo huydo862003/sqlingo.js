@@ -902,5 +902,3 @@ export class Oracle extends Dialect {
   static Parser = OracleParser;
   static Generator = OracleGenerator;
 }
-
-Dialect.register(Dialects.ORACLE, Oracle);

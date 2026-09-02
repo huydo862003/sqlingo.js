@@ -482,5 +482,3 @@ export class Drill extends Dialect {
   static Parser = DrillParser;
   static Generator = DrillGenerator;
 }
-
-Dialect.register(Dialects.DRILL, Drill);

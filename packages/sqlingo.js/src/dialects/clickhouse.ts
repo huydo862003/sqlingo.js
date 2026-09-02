@@ -2888,5 +2888,3 @@ export class ClickHouse extends Dialect {
   static Parser = ClickHouseParser;
   static Generator = ClickHouseGenerator;
 }
-
-Dialect.register(Dialects.CLICKHOUSE, ClickHouse);

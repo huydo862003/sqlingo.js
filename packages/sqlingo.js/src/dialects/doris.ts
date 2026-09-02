@@ -70,9 +70,11 @@ import type {
 import {
   MySQL,
 } from './mysql';
+import type {
+  Dialect,
+} from './dialect';
 import {
-  approxCountDistinctSql,
-  Dialect, Dialects,
+  approxCountDistinctSql, Dialects,
   renameFunc,
   timeFormat,
   unitToStr,
@@ -1149,5 +1151,3 @@ export class Doris extends MySQL {
   static Parser = DorisParser;
   static Generator = DorisGenerator;
 }
-
-Dialect.register(Dialects.DORIS, Doris);

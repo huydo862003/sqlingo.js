@@ -116,13 +116,15 @@ import type {
 import {
   TokenType,
 } from '../tokens';
+import type {
+  Dialect,
+} from './dialect';
 import {
   boolXorSql,
   buildFormattedTime,
   buildJsonExtractPath,
   countIfToSum,
-  dateAddIntervalSql,
-  Dialect, Dialects,
+  dateAddIntervalSql, Dialects,
   jsonExtractSegments,
   jsonPathKeyOnlyName,
   renameFunc,
@@ -2716,5 +2718,3 @@ export class SingleStore extends MySQL {
   static Parser = SingleStoreParser;
   static Generator = SingleStoreGenerator;
 }
-
-Dialect.register(Dialects.SINGLESTORE, SingleStore);

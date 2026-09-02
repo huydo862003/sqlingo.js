@@ -8,6 +8,7 @@
 	},
 	"version": "0.6.0",
 	"type": "module",
+	"sideEffects": false,
 	"description": "SQL parser, transpiler, optimizer, and engine for JavaScript/TypeScript - 32 dialects (Postgres, MySQL, BigQuery, Snowflake, DuckDB, etc). Port of Python SQLGlot.",
 	"main": "dist/index.cjs",
 	"module": "dist/index.js",
@@ -256,8 +257,6 @@
 		"@types/luxon": "^3.7.1",
 		"@types/node": "^25.2.1",
 		"tsup": "^8.5.1",
-		"typedoc": "^0.28.19",
-		"typedoc-github-theme": "^0.4.0",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.5",
 		"vitest": "4.1.0"

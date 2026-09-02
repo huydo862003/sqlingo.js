@@ -2,9 +2,33 @@
 
 ## 0.6.0
 
+### BREAKING CHANGES
+
+- Dialect imports no longer auto-register via side effects. Pass dialect classes directly or call `Dialect.register()` explicitly:
+
+  ```ts
+  // Before (v0.5.0)
+  import "@hdnax/sqlingo.js/mysql";
+  parse("SELECT 1", { read: "mysql" });
+
+  // After (v0.6.0) - preferred: pass class directly
+  import { MySQL } from "@hdnax/sqlingo.js/mysql";
+  parse("SELECT 1", { read: MySQL });
+
+  // After (v0.6.0) - opt-in string lookup
+  import { Dialect } from "@hdnax/sqlingo.js";
+  import { MySQL } from "@hdnax/sqlingo.js/mysql";
+  Dialect.register(MySQL);
+  parse("SELECT 1", { read: "mysql" });
+  ```
+
+- `Dialect.register()` signature changed from `register(name, class)` to `register(...classes)`.
+
 ### Minor Changes
 
 - 625fb15: Fix circular imports leading to unusability
+- Side-effect-free API surface enables tree shaking
+- Package marked with `"sideEffects": false`
 
 ## 0.5.0
 

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vue-tsc --noEmit && vite build && typerighter build api-reference --outDir ../../doc/api-reference",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -13,13 +13,14 @@
   },
   "dependencies": {
     "@dbml/parse": "^7.1.2",
-    "@hdnax/genuix": "^0.16.1",
+    "@hdnax/genuix": "^0.18.0",
     "@hdnax/sqlingo.js": "workspace:*",
     "@unhead/vue": "^3.1.0",
     "highlight.js": "^11.11.1",
     "marked": "^18.0.3",
     "monaco-editor": "^0.55.1",
     "pinia": "^3.0.4",
+    "typerighter": "^0.21.0",
     "vue": "^3.5.34",
     "vue-router": "^5.0.6"
   },

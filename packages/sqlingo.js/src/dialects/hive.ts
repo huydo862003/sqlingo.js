@@ -1854,5 +1854,3 @@ export class Hive extends Dialect {
   static Parser = HiveParser;
   static Generator = HiveGenerator;
 }
-
-Dialect.register(Dialects.HIVE, Hive);

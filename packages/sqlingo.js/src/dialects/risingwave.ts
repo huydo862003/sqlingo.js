@@ -26,7 +26,7 @@ import {
   cache,
 } from '../port_internals';
 import {
-  Dialect, Dialects,
+  Dialects,
 } from './dialect';
 import {
   Postgres,
@@ -252,5 +252,3 @@ export class RisingWave extends Postgres {
   static Parser = RisingWaveParser;
   static Generator = RisingWaveGenerator;
 }
-
-Dialect.register(Dialects.RISINGWAVE, RisingWave);

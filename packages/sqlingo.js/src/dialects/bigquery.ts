@@ -2982,5 +2982,3 @@ export class BigQuery extends Dialect {
   static Generator = BigQueryGenerator;
   static JsonPathTokenizer = BigQueryJsonPathTokenizer;
 }
-
-Dialect.register(Dialects.BIGQUERY, BigQuery);

@@ -71,5 +71,3 @@ export class Druid extends Dialect {
   static DIALECT_NAME = Dialects.DRUID;
   static Generator = DruidGenerator;
 }
-
-Dialect.register(Dialects.DRUID, Druid);

@@ -201,5 +201,3 @@ export class Tableau extends Dialect {
   static Parser = TableauParser;
   static Generator = TableauGenerator;
 }
-
-Dialect.register(Dialects.TABLEAU, Tableau);

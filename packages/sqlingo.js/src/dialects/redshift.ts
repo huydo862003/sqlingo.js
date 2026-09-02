@@ -57,11 +57,13 @@ import {
 import {
   eliminateDistinctOn, eliminateSemiAndAntiJoins, eliminateWindowClause, preprocess, unnestGenerateDateArrayUsingRecursiveCte, unqualifyUnnest,
 } from '../transforms';
+import type {
+  Dialect,
+} from './dialect';
 import {
   arrayConcatSql,
   concatToDPipeSql,
   concatWsToDPipeSql,
-  Dialect,
   Dialects,
   generatedAsIdentityColumnConstraintSql,
   jsonExtractSegments,
@@ -916,5 +918,3 @@ export class Redshift extends Postgres {
   static Parser = RedshiftParser;
   static Generator = RedshiftGenerator;
 }
-
-Dialect.register(Dialects.REDSHIFT, Redshift);

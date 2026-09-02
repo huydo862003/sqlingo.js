@@ -37,10 +37,12 @@ import {
 import {
   preprocess,
 } from '../transforms';
+import type {
+  Dialect,
+} from './dialect';
 import {
   renameFunc, arrowJsonExtractSql, buildTimestampTrunc, unitToStr,
-  approxCountDistinctSql, inlineArraySql, propertySql,
-  Dialect, Dialects,
+  approxCountDistinctSql, inlineArraySql, propertySql, Dialects,
 } from './dialect';
 import {
   MySQL,
@@ -748,4 +750,3 @@ export class StarRocks extends MySQL {
   static Parser = StarRocksParser;
   static Generator = StarRocksGenerator;
 }
-Dialect.register(Dialects.STARROCKS, StarRocks);

@@ -1668,5 +1668,3 @@ export class Exasol extends Dialect {
   static Parser = ExasolParser;
   static Generator = ExasolGenerator;
 }
-
-Dialect.register(Dialects.EXASOL, Exasol);

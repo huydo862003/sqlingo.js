@@ -112,5 +112,3 @@ export class Solr extends Dialect {
   static Tokenizer = SolrTokenizer;
   static Generator = SolrGenerator;
 }
-
-Dialect.register(Dialects.SOLR, Solr);

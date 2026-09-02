@@ -4088,5 +4088,3 @@ export class Snowflake extends Dialect {
   static Parser = SnowflakeParser;
   static Generator = SnowflakeGenerator;
 }
-
-Dialect.register(Dialects.SNOWFLAKE, Snowflake);

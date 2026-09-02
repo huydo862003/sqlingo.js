@@ -454,5 +454,3 @@ export class PRQL extends Dialect {
 
   static Generator = PRQLGenerator;
 }
-
-Dialect.register(Dialects.PRQL, PRQL);

@@ -24,7 +24,7 @@ import {
   ctasWithTmpTablesToCreateTmpView, preprocess, removeUniqueConstraints,
 } from '../transforms';
 import {
-  Dialect, Dialects,
+  Dialects,
 } from './dialect';
 import {
   Postgres,
@@ -235,5 +235,3 @@ export class Materialize extends Postgres {
   static Parser = MaterializeParser;
   static Generator = MaterializeGenerator;
 }
-
-Dialect.register(Dialects.MATERIALIZE, Materialize);

@@ -1,5 +1,5 @@
 import {
-  describe, it, expect,
+  describe, it, expect, beforeEach, afterEach,
 } from 'vitest';
 import {
   parse, parseOne, transpile, optimize, tokenize,
@@ -25,8 +25,135 @@ import {
   update, delete_, insert, subquery, union, intersect, except,
   table, toIdentifier, cast, maybeParse,
 } from '../src/expressions';
+import {
+  Athena,
+} from '../src/dialects/athena';
+import {
+  BigQuery,
+} from '../src/dialects/bigquery';
+import {
+  ClickHouse,
+} from '../src/dialects/clickhouse';
+import {
+  Databricks,
+} from '../src/dialects/databricks';
+import {
+  Doris,
+} from '../src/dialects/doris';
+import {
+  Dremio,
+} from '../src/dialects/dremio';
+import {
+  Drill,
+} from '../src/dialects/drill';
+import {
+  Druid,
+} from '../src/dialects/druid';
+import {
+  DuckDB,
+} from '../src/dialects/duckdb';
+import {
+  Dune,
+} from '../src/dialects/dune';
+import {
+  Exasol,
+} from '../src/dialects/exasol';
+import {
+  Fabric,
+} from '../src/dialects/fabric';
+import {
+  Hive,
+} from '../src/dialects/hive';
+import {
+  Materialize,
+} from '../src/dialects/materialize';
+import {
+  MySQL,
+} from '../src/dialects/mysql';
+import {
+  Oracle,
+} from '../src/dialects/oracle';
+import {
+  Postgres,
+} from '../src/dialects/postgres';
+import {
+  Presto,
+} from '../src/dialects/presto';
+import {
+  Redshift,
+} from '../src/dialects/redshift';
+import {
+  RisingWave,
+} from '../src/dialects/risingwave';
+import {
+  SingleStore,
+} from '../src/dialects/singlestore';
+import {
+  Snowflake,
+} from '../src/dialects/snowflake';
+import {
+  Solr,
+} from '../src/dialects/solr';
+import {
+  Spark,
+} from '../src/dialects/spark';
+import {
+  Spark2,
+} from '../src/dialects/spark2';
+import {
+  SQLite,
+} from '../src/dialects/sqlite';
+import {
+  StarRocks,
+} from '../src/dialects/starrocks';
+import {
+  Tableau,
+} from '../src/dialects/tableau';
+import {
+  Teradata,
+} from '../src/dialects/teradata';
+import {
+  Trino,
+} from '../src/dialects/trino';
+import {
+  TSQL,
+} from '../src/dialects/tsql';
 
-describe('Bundle imports', () => {
+const ALL_DIALECT_CLASSES = [
+  Athena,
+  BigQuery,
+  ClickHouse,
+  Databricks,
+  Doris,
+  Dremio,
+  Drill,
+  Druid,
+  DuckDB,
+  Dune,
+  Exasol,
+  Fabric,
+  Hive,
+  Materialize,
+  MySQL,
+  Oracle,
+  Postgres,
+  Presto,
+  Redshift,
+  RisingWave,
+  SingleStore,
+  Snowflake,
+  Solr,
+  Spark,
+  Spark2,
+  SQLite,
+  StarRocks,
+  Tableau,
+  Teradata,
+  Trino,
+  TSQL,
+];
+
+describe('Exports', () => {
   it('core functions are defined', () => {
     expect(parse).toBeTypeOf('function');
     expect(parseOne).toBeTypeOf('function');
@@ -143,14 +270,125 @@ describe('Bundle imports', () => {
       expect(fn).toBeTypeOf('function');
     }
   });
+});
 
-  it('optimize works', () => {
-    const result = optimize('SELECT 1 + 1');
+describe('Dialect registration', () => {
+  let savedRegistry: Map<string, typeof Dialect>;
 
-    expect(result.sql()).toContain('2');
+  beforeEach(() => {
+    savedRegistry = new Map(Dialect.registry);
+    Dialect.registry.clear();
   });
 
-  it('optimize works with schema', () => {
+  afterEach(() => {
+    Dialect.registry.clear();
+
+    for (const [
+      k,
+      v,
+    ] of savedRegistry) {
+      Dialect.registry.set(k, v);
+    }
+  });
+
+  it('string-based lookup throws when dialect is not registered', () => {
+    expect(() => parse('SELECT 1', {
+      read: 'mysql',
+    })).toThrow('Unknown dialect');
+  });
+
+  it('class-based works without any registration', () => {
+    const [ast] = parse('SELECT 1', {
+      read: MySQL,
+    });
+
+    expect(ast.sql()).toBe('SELECT 1');
+  });
+
+  it('transpile works with class-based dialects', () => {
+    const [sql] = transpile('SELECT DATE_SUB(d, INTERVAL 1 DAY) FROM t', {
+      read: MySQL,
+      write: Postgres,
+    });
+
+    expect(sql).toBe('SELECT d - INTERVAL \'1 DAY\' FROM t');
+  });
+
+  it('string-based works after Dialect.register()', () => {
+    Dialect.register(MySQL);
+
+    const [ast] = parse('SELECT 1', {
+      read: 'mysql',
+    });
+
+    expect(ast.sql()).toBe('SELECT 1');
+  });
+
+  it('registering one dialect does not affect others', () => {
+    Dialect.register(MySQL);
+
+    expect(() => parse('SELECT 1', {
+      read: 'postgres',
+    })).toThrow('Unknown dialect');
+
+    const [ast] = parse('SELECT 1', {
+      read: 'mysql',
+    });
+
+    expect(ast.sql()).toBe('SELECT 1');
+  });
+
+  it('all dialect classes parse SELECT 1', () => {
+    for (const DialectClass of ALL_DIALECT_CLASSES) {
+      const [ast] = parse('SELECT 1', {
+        read: DialectClass,
+      });
+
+      expect(ast, `${DialectClass.DIALECT_NAME} parse failed`).toBeDefined();
+      expect(
+        ast.sql({
+          dialect: DialectClass,
+        }),
+        `${DialectClass.DIALECT_NAME} sql() failed`,
+      ).toBe('SELECT 1');
+    }
+  });
+
+  it('all dialect classes transpile SELECT 1', () => {
+    for (const DialectClass of ALL_DIALECT_CLASSES) {
+      const [sql] = transpile('SELECT 1', {
+        read: DialectClass,
+        write: DialectClass,
+      });
+
+      expect(sql, `${DialectClass.DIALECT_NAME} transpile failed`).toBe('SELECT 1');
+    }
+  });
+
+  it('Dialect.register() accepts variadic dialect classes', () => {
+    Dialect.register(MySQL, Postgres, DuckDB);
+
+    expect(parse('SELECT 1', {
+      read: 'mysql',
+    })[0].sql()).toBe('SELECT 1');
+    expect(parse('SELECT 1', {
+      read: 'postgres',
+    })[0].sql()).toBe('SELECT 1');
+    expect(parse('SELECT 1', {
+      read: 'duckdb',
+    })[0].sql()).toBe('SELECT 1');
+    expect(() => parse('SELECT 1', {
+      read: 'snowflake',
+    })).toThrow('Unknown dialect');
+  });
+});
+
+describe('Optimize', () => {
+  it('constant folding', () => {
+    expect(optimize('SELECT 1 + 1').sql()).toContain('2');
+  });
+
+  it('with schema', () => {
     const result = optimize('SELECT * FROM t WHERE 1 = 1 AND x > 2', {
       schema: {
         t: {
@@ -160,63 +398,5 @@ describe('Bundle imports', () => {
     });
 
     expect(result.sql()).toContain('x');
-  });
-
-  it('all dialects register and parse', async () => {
-    const dialects = [
-      'athena',
-      'bigquery',
-      'clickhouse',
-      'databricks',
-      'doris',
-      'dremio',
-      'drill',
-      'druid',
-      'duckdb',
-      'dune',
-      'exasol',
-      'fabric',
-      'hive',
-      'materialize',
-      'mysql',
-      'oracle',
-      'postgres',
-      'presto',
-      'redshift',
-      'risingwave',
-      'singlestore',
-      'snowflake',
-      'solr',
-      'spark',
-      'spark2',
-      'sqlite',
-      'starrocks',
-      'tableau',
-      'teradata',
-      'trino',
-      'tsql',
-    ];
-
-    for (const d of dialects) {
-      await import(`../src/dialects/${d}`);
-    }
-
-    for (const d of dialects) {
-      const [ast] = parse('SELECT 1', {
-        read: d,
-      });
-
-      expect(ast).toBeDefined();
-      expect(ast.sql({
-        dialect: d,
-      })).toBe('SELECT 1');
-
-      const [sql] = transpile('SELECT 1', {
-        read: d,
-        write: d,
-      });
-
-      expect(sql).toBe('SELECT 1');
-    }
   });
 });

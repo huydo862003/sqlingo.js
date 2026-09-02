@@ -2660,4 +2660,3 @@ export class MySQL extends Dialect {
   static Parser = MySQLParser;
   static Generator = MySQLGenerator;
 }
-Dialect.register(Dialects.MYSQL, MySQL);

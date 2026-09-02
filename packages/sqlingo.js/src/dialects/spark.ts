@@ -86,11 +86,13 @@ import {
 import {
   SparkTyping,
 } from '../typing/spark';
+import type {
+  Dialect,
+} from './dialect';
 import {
   arrayAppendSql,
   dateDeltaToBinaryIntervalOp,
-  unitToVar,
-  Dialect, Dialects,
+  unitToVar, Dialects,
   renameFunc,
   groupConcatSql as baseGroupConcatSql,
   buildLike,
@@ -697,5 +699,3 @@ export class Spark extends Spark2 {
   static Parser = SparkParser;
   static Generator = SparkGenerator;
 }
-
-Dialect.register(Dialects.SPARK, Spark);

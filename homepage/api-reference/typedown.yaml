@@ -1,0 +1,8 @@
+version: "1.0.0"
+vault:
+  root_dir: "vault"
+repo: "https://github.com/huydo862003/sqlingo.js"
+site:
+  title: "sqlingo.js API Reference"
+  description: "API reference for sqlingo.js - a SQL parser, transpiler, and optimizer for JavaScript/TypeScript"
+  base_path: "/sqlingo.js/api-reference"

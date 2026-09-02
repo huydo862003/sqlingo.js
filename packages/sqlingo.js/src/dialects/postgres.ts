@@ -1953,5 +1953,3 @@ export class Postgres extends Dialect {
   static Parser = PostgresParser;
   static Generator = PostgresGenerator;
 }
-
-Dialect.register(Dialects.POSTGRES, Postgres);
