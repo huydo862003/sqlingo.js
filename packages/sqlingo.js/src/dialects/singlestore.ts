@@ -1059,7 +1059,7 @@ class SingleStoreGenerator extends MySQL.Generator {
             LiteralExpr.string(''),
             new MulExpr({
               this: this.func('LENGTH', [e.args.this]),
-              expression: e.args.times,
+              expression: Array.isArray(e.args.times) ? e.args.times[0] : e.args.times,
             }),
             e.args.this,
           ]);
