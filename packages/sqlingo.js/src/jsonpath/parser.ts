@@ -27,7 +27,7 @@ import {
   Dialect,
   type DialectType,
 } from '../dialects/dialect';
-import {
+import type {
   JsonPathTokenizer,
 } from './tokenizer';
 
@@ -211,7 +211,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
   function parseVarText (): string {
     const prevIndex = i - 2;
 
-    while (matchSet(JsonPathTokenizer.VAR_TOKENS)) {}
+    while (matchSet((jsonPathTokenizer.constructor as typeof JsonPathTokenizer).VAR_TOKENS)) {}
 
     const start = prevIndex < 0 ? 0 : (tokens[prevIndex].end ?? 0) + 1;
 
@@ -237,7 +237,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
 
       let value: string | JsonPathWildcardExpr | undefined;
 
-      if (matchSet(JsonPathTokenizer.VAR_TOKENS)) {
+      if (matchSet((jsonPathTokenizer.constructor as typeof JsonPathTokenizer).VAR_TOKENS)) {
         value = parseVarText();
       } else if (match(TokenType.IDENTIFIER)) {
         value = prev().text;
@@ -260,7 +260,7 @@ export function parse (path: string, options?: ParseJsonPathOptions): JsonPathEx
       }
     } else if (match(TokenType.L_BRACKET)) {
       expressions.push(parseBracket());
-    } else if (matchSet(JsonPathTokenizer.VAR_TOKENS)) {
+    } else if (matchSet((jsonPathTokenizer.constructor as typeof JsonPathTokenizer).VAR_TOKENS)) {
       expressions.push(new JsonPathKeyExpr({
         this: parseVarText(),
       }));

@@ -26,6 +26,7 @@ export default [
       'no-restricted-imports': 'off',
       'custom/no-import-alias': 'off',
       'unicorn/prevent-abbreviations': 'off',
+      'unicorn/name-replacements': 'off',
     },
   },
   {
@@ -47,6 +48,7 @@ export default [
       'import/no-namespace': 'off',
       'n/prefer-node-protocol': 'off',
       'unicorn/prevent-abbreviations': 'off',
+      'unicorn/name-replacements': 'off',
       'id-length': 'off',
       'custom/no-import-alias': 'off',
       'perfectionist/sort-modules': 'off',

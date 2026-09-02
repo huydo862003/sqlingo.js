@@ -176,10 +176,10 @@ class MyDialect extends Dialect {
   };
 }
 
-// Register for use in transpile/parse
-Dialect.register("my_dialect", MyDialect);
+// Register for string-based lookup
+Dialect.register(MyDialect);
 
-const [result] = transpile("SELECT 1", { write: "my_dialect" });
+const [result] = transpile("SELECT 1", { write: MyDialect });
 ```
 
 ## Supported Dialects

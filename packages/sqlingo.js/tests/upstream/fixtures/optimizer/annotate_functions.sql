@@ -76,6 +76,12 @@ STRING;
 ANY_VALUE(tbl.array_col);
 ARRAY<STRING>;
 
+CURRENT_SCHEMA();
+VARCHAR;
+
+MONTHNAME(tbl.date_col);
+VARCHAR;
+
 CHR(65);
 VARCHAR;
 
@@ -90,9 +96,6 @@ VARCHAR;
 
 TO_BASE64(tbl.bytes_col);
 VARCHAR;
-
-UNIX_DATE(tbl.date_col);
-INT;
 
 UNIX_SECONDS(tbl.timestamp_col);
 BIGINT;
@@ -161,6 +164,18 @@ BOOLEAN;
 CURRENT_CATALOG();
 VARCHAR;
 
+CURRENT_USER();
+VARCHAR;
+
+SESSION_USER();
+VARCHAR;
+
+RAND();
+DOUBLE;
+
+DEGREES(tbl.double_col);
+DOUBLE;
+
 # dialect: snowflake
 TO_BINARY('test');
 BINARY;
@@ -168,6 +183,9 @@ BINARY;
 # dialect: snowflake
 TO_BINARY('test', 'HEX');
 BINARY;
+
+ARRAY_CONTAINS(tbl.array_col, '1');
+BOOLEAN;
 
 --------------------------------------
 -- Spark2 / Spark3 / Databricks
@@ -665,6 +683,10 @@ STRING;
 OVERLAY(tbl.bin_col PLACING tbl.bin_col FROM tbl.int_col FOR tbl.int_col);
 BINARY;
 
+# dialect: spark, databricks
+UNIX_DATE(tbl.date_col);
+INT;
+
 # dialect: hive, spark2, spark, databricks
 REVERSE(tbl.str_col);
 STRING;
@@ -677,9 +699,33 @@ ARRAY<STRING>;
 RIGHT(tbl.str_col, tbl.int_col);
 STRING;
 
+# dialect: spark2, spark, databricks
+NEXT_DAY(tbl.date_col, tbl.str_col);
+DATE;
+
+# dialect: hive
+NEXT_DAY(tbl.date_col, tbl.str_col);
+VARCHAR;
+
+# dialect: hive, spark2, spark, databricks
+DAYOFWEEK(tbl.date_col);
+INT;
+
+# dialect: hive, spark2, spark, databricks
+DAYOFMONTH(tbl.date_col);
+INT;
+
 # dialect: hive, spark2, spark, databricks
 TRANSLATE(tbl.str_col, tbl.str_col, tbl.str_col);
 STRING; 
+
+# dialect: spark, databricks
+ARRAY_COMPACT(tbl.array_col);
+ARRAY<STRING>;
+
+# dialect: spark, databricks
+ARRAY_COMPACT(array(1, 2, 3));
+ARRAY<INT>;
 
 # dialect: hive, spark2, spark, databricks
 SPLIT(tbl.str_col, tbl.str_col, tbl.int_col);
@@ -687,6 +733,150 @@ ARRAY<STRING>;
 
 # dialect: hive, spark2, spark, databricks
 SPLIT(tbl.str_col, tbl.str_col);
+ARRAY<STRING>;
+
+# dialect: spark2, spark, databricks
+FROM_UTC_TIMESTAMP(tbl.timestamp_col, tbl.str_col);
+TIMESTAMP;
+
+# dialect: spark2, spark, databricks
+ADD_MONTHS(tbl.date_col, tbl.int_col);
+DATE;
+
+# dialect: hive
+ADD_MONTHS(tbl.date_col, tbl.int_col);
+STRING;
+
+# dialect: spark2, spark, databricks
+FILTER(tbl.array_col, x -> x > 2);
+ARRAY<STRING>;
+
+# dialect: spark, databricks
+ARRAY_INSERT(array(1, 2, 3, 4), 5, 5);
+ARRAY<INT>;
+
+# dialect: spark, databricks
+ARRAY_INSERT(tbl.array_col, tbl.int_col, tbl.str_col);
+ARRAY<STRING>;
+
+# dialect: hive, spark2, spark, databricks
+ARRAY_INTERSECT(tbl.array_col, tbl.array_col);
+ARRAY<STRING>;
+
+# dialect: hive, spark2, spark, databricks
+ARRAY_INTERSECT(array(1, 2, 3), array(1, 3, 5));
+ARRAY<INT>;
+
+# dialect: hive
+PERCENTILE_APPROX(3, 0.2);
+DOUBLE;
+
+# dialect: hive
+PERCENTILE_APPROX(3, array(0.2, 0.3));
+ARRAY<DOUBLE>;
+
+# dialect: hive
+PERCENTILE_APPROX(3.1, 0.2);
+DOUBLE;
+
+# dialect: hive
+PERCENTILE_APPROX(3.1, array(0.2, 0.3));
+ARRAY<DOUBLE>;
+
+# dialect: hive, spark2, spark, databricks
+PERCENTILE(3, 0.2);
+DOUBLE;
+
+# dialect: hive, spark2, spark, databricks
+PERCENTILE(3, array(0.2, 0.3));
+ARRAY<DOUBLE>;
+
+# dialect: spark2, spark, databricks
+PERCENTILE(3.1, 0.2);
+DOUBLE;
+
+# dialect: spark2, spark, databricks
+PERCENTILE(3.1, array(0.2, 0.3));
+ARRAY<DOUBLE>;
+
+# dialect: spark2, spark, databricks
+PERCENTILE_APPROX(3.1, 0.2);
+DOUBLE;
+
+# dialect: spark2, spark, databricks
+PERCENTILE_APPROX(3, 0.2);
+INT;
+
+# dialect: spark2, spark, databricks
+PERCENTILE_APPROX(3.1, array(0.2, 0.3));
+ARRAY<DOUBLE>;
+
+# dialect: spark2, spark, databricks
+PERCENTILE_APPROX(3, array(0.2, 0.3));
+ARRAY<INT>;
+
+# dialect: spark2, spark, databricks
+APPROX_PERCENTILE(3.1, array(0.2, 0.3));
+ARRAY<DOUBLE>;
+
+# dialect: spark2, spark, databricks
+APPROX_PERCENTILE(3, array(0.2, 0.3));
+ARRAY<INT>;
+
+# dialect: spark, databricks
+BIT_OR(tbl.int_col);
+INT;
+
+# dialect: spark, databricks
+BIT_OR(tbl.bigint_col);
+BIGINT;
+
+# dialect: spark2, spark, databricks
+ELEMENT_AT(ARRAY(1, 2, 3), 1);
+INT;
+
+# dialect: spark2, spark, databricks
+ELEMENT_AT(ARRAY('1', '2','3'), 1);
+STRING;
+
+# dialect: spark2, spark, databricks
+ELEMENT_AT(MAP('a', 1, 'b', 2,'c', 3), 'b');
+INT;
+
+# dialect: spark2, spark, databricks
+ELEMENT_AT(MAP('a', 'k1', 'b', 'k2', 'c', 'k3'), 'b');
+STRING;
+
+# dialect: spark, databricks
+BIT_AND(tbl.int_col);
+INT;
+
+# dialect: spark, databricks
+BIT_AND(tbl.bigint_col);
+BIGINT;
+
+# dialect: spark, databricks
+BIT_XOR(tbl.int_col);
+INT;
+
+# dialect: spark, databricks
+BIT_XOR(tbl.bigint_col);
+BIGINT;
+
+# dialect: hive, spark2, spark, databricks
+ARRAY_DISTINCT(tbl.array_col);
+ARRAY<STRING>;
+
+# dialect: hive, spark2, spark, databricks
+ARRAY_DISTINCT(array(1, 2, 3, null, 3));
+ARRAY<INT>;
+
+# dialect: hive, spark2, spark, databricks
+ARRAY_EXCEPT(array(1, 2, 3), array(1, 3, 5));
+ARRAY<INT>;
+
+# dialect: hive, spark2, spark, databricks
+ARRAY_EXCEPT(tbl.array_col, tbl.array_col);
 ARRAY<STRING>;
 
 --------------------------------------
@@ -2172,6 +2362,10 @@ DATETIME;
 # dialect: bigquery
 DATE_ADD(DATETIME '2008-12-25 15:30:00', INTERVAL 30 MINUTE);
 DATETIME;
+
+# dialect: bigquery
+UNIX_DATE(tbl.date_col);
+BIGINT;
 
 --------------------------------------
 -- Snowflake
@@ -5637,6 +5831,18 @@ VARCHAR;
 STUFF(tbl.str_col, tbl.int_col, tbl.int_col, tbl.str_col);
 VARCHAR;
 
+# dialect: tsql
+DEGREES(tbl.int_col);
+INT;
+
+# dialect: tsql
+DEGREES(tbl.float_col);
+FLOAT;
+
+# dialect: tsql
+DEGREES(tbl.bigint_col);
+BIGINT;
+
 --------------------------------------
 -- MySQL
 --------------------------------------
@@ -5785,6 +5991,10 @@ DOUBLE;
 VERSION();
 VARCHAR;
 
+# dialect: mysql
+CURRENT_TIMESTAMP();
+DATETIME;
+
 --------------------------------------
 -- DuckDB
 --------------------------------------
@@ -5930,8 +6140,16 @@ ISINF(tbl.float_col);
 BOOLEAN;
 
 # dialect: duckdb
+REVERSE(tbl.str_col);
+VARCHAR;
+
+# dialect: duckdb
 RANDOM();
 DOUBLE;
+
+# dialect: duckdb
+FORMAT('Benchmark "{}" took {} seconds', 'CSV', 42);
+VARCHAR;
 
 # dialect: duckdb
 QUARTER(tbl.date_col);
@@ -5990,6 +6208,10 @@ TO_DAYS(tbl.int_col);
 INTERVAL;
 
 # dialect: duckdb
+ISODOW(tbl.date_col);
+BIGINT;
+
+# dialect: duckdb
 BIT_LENGTH(tbl.str_col);
 BIGINT;
 
@@ -6002,8 +6224,32 @@ LENGTH(tbl.str_col);
 BIGINT;
 
 # dialect: duckdb
+TIME_BUCKET(tbl.interval_col, tbl.date_col, tbl.interval_col);
+DATE;
+
+# dialect: duckdb
+TIME_BUCKET(tbl.interval_col, tbl.date_col);
+DATE;
+
+# dialect: duckdb
+TIME_BUCKET(tbl.interval_col, tbl.timestamp_col, tbl.interval_col);
+TIMESTAMP;
+
+# dialect: duckdb
+TIME_BUCKET(tbl.interval_col, tbl.timestamp_col);
+TIMESTAMP;
+
+# dialect: duckdb
 TRANSLATE(tbl.str_col, tbl.str_col, tbl.str_col);
 VARCHAR;
+
+# dialect: duckdb
+COUNTIF(tbl.int_col > tbl.int_col);
+HUGEINT;
+
+# dialect: duckdb
+DATE_DIFF('year', tbl.timestamp_col, tbl.timestamp_col);
+BIGINT;
 
 --------------------------------------
 -- Presto / Trino

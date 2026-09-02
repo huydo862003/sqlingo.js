@@ -6124,7 +6124,7 @@ class DuckDBGenerator extends Generator {
       }
 
       const unnestStr = super.unnestSql(expression);
-      const aliasSql = alias ? ` ${this.sql(alias)}` : '';
+      const aliasSql = alias ? ` AS ${this.sql(alias)}` : '';
 
       return `(SELECT ${unnestStr})${aliasSql}`;
     }
@@ -6264,11 +6264,17 @@ class DuckDBGenerator extends Generator {
     return this.regexpExtractCommon(expression);
   }
 
-  regexpextractallSql (expression: RegexpExtractAllExpr): string {
+  regexpExtractAllSql (expression: RegexpExtractAllExpr): string {
     return this.regexpExtractCommon(expression);
   }
 
   numberToStrSql (expression: NumberToStrExpr): string {
+    if (expression.args.culture) {
+      this.unsupported('DuckDB does not support the culture argument in NumberToStr');
+
+      return this.functionFallbackSql(expression);
+    }
+
     const fmt = expression.args.format?.name;
 
     if (fmt && /^\d+$/.test(fmt)) {
@@ -6561,9 +6567,17 @@ class DuckDBGenerator extends Generator {
   }
 
   trimSql (expression: TrimExpr): string {
-    expression.args.this?.replace(castToVarchar(expression.args.this));
+    const castedThis = castToVarchar(expression.args.this);
+
+    if (castedThis) {
+      expression.setArgKey('this', castedThis);
+    }
     if (expression.args.expression instanceof Expression) {
-      expression.args.expression.replace(castToVarchar(expression.args.expression));
+      const castedExpr = castToVarchar(expression.args.expression);
+
+      if (castedExpr) {
+        expression.setArgKey('expression', castedExpr);
+      }
     }
 
     const resultSql = super.trimSql(expression);
@@ -6845,5 +6859,3 @@ export class DuckDB extends Dialect {
   static Parser = DuckDBParser;
   static Generator = DuckDBGenerator;
 }
-
-Dialect.register(Dialects.DUCKDB, DuckDB);

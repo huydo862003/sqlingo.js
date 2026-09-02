@@ -111,6 +111,7 @@ import {
   UtcTimestampExpr,
   UtcTimeExpr,
   DateStrToDateExpr,
+  ParenExpr,
   func,
 } from '../expressions';
 import {
@@ -429,7 +430,7 @@ class MySQLTokenizer extends Tokenizer {
      * Special characters that are recognized after an escape character (\) in MySQL.
      * Reference: https://dev.mysql.com/doc/refman/8.4/en/string-literals.html
      */
-  public ESCAPE_FOLLOW_CHARS = [
+  static ESCAPE_FOLLOW_CHARS = [
     '0',
     'b',
     'n',
@@ -706,7 +707,9 @@ class MySQLParser extends Parser {
           }),
         });
 
-        return diff.add(1); // Standardized parenthesized expression with offset
+        return new ParenExpr({
+          this: diff.add(1),
+        });
       },
       VERSION: (args: unknown[]) => CurrentVersionExpr.fromArgList(args),
       WEEK: (args: Expression[]): WeekExpr =>
@@ -2292,7 +2295,7 @@ class MySQLGenerator extends Generator {
     return this.functionFallbackSql(expression);
   }
 
-  public dpipeSql (expression: DPipeExpr): string {
+  public dPipeSql (expression: DPipeExpr): string {
     return this.func('CONCAT', [...expression.flatten()]);
   }
 
@@ -2466,7 +2469,7 @@ class MySQLGenerator extends Generator {
    */
   public timestampTruncSql (expression: TimestampTruncExpr): string {
     const unit = expression.args.unit;
-    const startTs = '\'0000-01-01 00:00:00\'';
+    const startTs = '0000-01-01 00:00:00';
 
     // Calculate diff between 0000-01-01 and target, then add that interval back to the base
     const timestampDiff = buildDateDelta(TimestampDiffExpr)([
@@ -2504,7 +2507,7 @@ class MySQLGenerator extends Generator {
     ] as Expression[]);
   }
 
-  public attimezoneSql (expression: AtTimeZoneExpr): string {
+  public atTimeZoneSql (expression: AtTimeZoneExpr): string {
     this.unsupported('AT TIME ZONE is not supported by MySQL');
 
     return this.sql(expression.args.this);
@@ -2660,4 +2663,3 @@ export class MySQL extends Dialect {
   static Parser = MySQLParser;
   static Generator = MySQLGenerator;
 }
-Dialect.register(Dialects.MYSQL, MySQL);

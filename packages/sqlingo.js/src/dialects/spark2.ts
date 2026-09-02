@@ -68,8 +68,11 @@ import {
 import {
   Spark2Typing,
 } from '../typing/spark2';
+import type {
+  Dialect,
+} from './dialect';
 import {
-  binaryFromFunction, bracketToElementAtSql, buildFormattedTime, Dialect, Dialects, isParseJson, pivotColumnNames,
+  binaryFromFunction, bracketToElementAtSql, buildFormattedTime, Dialects, isParseJson, pivotColumnNames,
   renameFunc,
   unitToStr,
 } from './dialect';
@@ -747,5 +750,3 @@ export class Spark2 extends Hive {
   static Parser = Spark2Parser;
   static Generator = Spark2Generator;
 }
-
-Dialect.register(Dialects.SPARK2, Spark2);

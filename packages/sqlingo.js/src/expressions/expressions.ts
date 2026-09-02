@@ -18364,6 +18364,11 @@ export type ArrayExceptExprArgs = Merge<[
 export class ArrayExceptExpr extends FuncExpr {
   static key = ExpressionKey.ARRAY_EXCEPT;
 
+  static availableArgs = new Set([
+    'this',
+    'expression',
+  ]);
+
   static argOrder = [
     'this',
     'expression',
@@ -23210,6 +23215,7 @@ export class GapFillExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
     'tsColumn',
     'bucketWidth',
     'partitioningColumns',
@@ -24090,6 +24096,12 @@ export class JsonArrayExpr extends FuncExpr {
     super(args);
   }
 
+  static fromArgList<T extends typeof FuncExpr> (this: T, args: unknown[]): InstanceType<T> {
+    return new this({
+      expressions: args,
+    } as FuncExprArgs) as InstanceType<T>;
+  }
+
   static {
     this.register();
   }
@@ -24504,6 +24516,10 @@ export class JsonbContainsExpr extends multiInherit(BinaryExpr, FuncExpr) {
 
   constructor (args: JsonbContainsExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -24937,6 +24953,10 @@ export class JsonArrayContainsExpr extends multiInherit(BinaryExpr, PredicateExp
 
   constructor (args: JsonArrayContainsExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -26475,8 +26495,8 @@ export type FeaturesAtTimeExprArgs = Merge<[
   {
     this?: Expression;
     time?: Expression;
-    numRows?: Expression[];
-    ignoreFeatureNulls?: Expression[];
+    numRows?: Expression;
+    ignoreFeatureNulls?: Expression;
   },
 ]>;
 
@@ -26594,7 +26614,7 @@ export type VectorSearchExprArgs = Merge<[
     queryColumnToSearch?: Expression;
     topK?: Expression;
     distanceType?: Expression;
-    options?: Expression[];
+    options?: Expression;
   },
 ]>;
 
@@ -27117,6 +27137,8 @@ export class RegexpExtractAllExpr extends FuncExpr {
   ]);
 
   static argOrder = [
+    'this',
+    'expression',
     'group',
     'parameters',
     'position',
@@ -28942,8 +28964,8 @@ export class TimeExpr extends FuncExpr {
   ]);
 
   static argOrder = [
-    'zone',
     'this',
+    'zone',
   ];
 
   declare args: TimeExprArgs;
@@ -29077,8 +29099,8 @@ export class TimeStrToTimeExpr extends FuncExpr {
   ]);
 
   static argOrder = [
-    'zone',
     'this',
+    'zone',
   ];
 
   declare args: TimeStrToTimeExprArgs;
@@ -31684,6 +31706,10 @@ export class ExplodeOuterExpr extends ExplodeExpr {
   constructor (args: ExplodeOuterExprArgs = {}) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
 export type PosexplodeExprArgs = Merge<[
@@ -31772,6 +31798,10 @@ export class AndExpr extends multiInherit(ConnectorExpr, FuncExpr) {
   constructor (args: AndExprArgs = {}) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
 export type OrExprArgs = Merge<[
@@ -31797,6 +31827,10 @@ export class OrExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
   constructor (args: OrExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -31830,6 +31864,10 @@ export class XorExpr extends multiInherit(ConnectorExpr, FuncExpr) {
 
   constructor (args: XorExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 
@@ -33053,6 +33091,10 @@ export class PosexplodeOuterExpr extends multiInherit(PosexplodeExpr, ExplodeOut
   constructor (args: PosexplodeOuterExprArgs = {}) {
     super(args);
   }
+
+  static {
+    this.register();
+  }
 }
 
 export type ApproxQuantileExprArgs = Merge<[
@@ -33088,6 +33130,10 @@ export class ApproxQuantileExpr extends QuantileExpr {
 
   constructor (args: ApproxQuantileExprArgs = {}) {
     super(args);
+  }
+
+  static {
+    this.register();
   }
 }
 

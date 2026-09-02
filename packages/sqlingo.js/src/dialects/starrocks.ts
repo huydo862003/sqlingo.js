@@ -37,10 +37,12 @@ import {
 import {
   preprocess,
 } from '../transforms';
+import type {
+  Dialect,
+} from './dialect';
 import {
   renameFunc, arrowJsonExtractSql, buildTimestampTrunc, unitToStr,
-  approxCountDistinctSql, inlineArraySql, propertySql,
-  Dialect, Dialects,
+  approxCountDistinctSql, inlineArraySql, propertySql, Dialects,
 } from './dialect';
 import {
   MySQL,
@@ -667,7 +669,7 @@ class StarRocksGenerator extends MySQL.Generator {
         const engineIndex = engine?.index !== undefined ? engine.index : -1;
 
         // Move the Primary Key from the schema to the properties list at the correct index
-        props.setArgKey('expressions', [primaryKey.pop()], engineIndex + 1, {
+        props.setArgKey('expressions', primaryKey.pop(), engineIndex + 1, {
           overwrite: false,
         });
       }
@@ -748,4 +750,3 @@ export class StarRocks extends MySQL {
   static Parser = StarRocksParser;
   static Generator = StarRocksGenerator;
 }
-Dialect.register(Dialects.STARROCKS, StarRocks);

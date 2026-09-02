@@ -33,8 +33,10 @@ import {
 import {
   eliminateDistinctOn, eliminateQualify, eliminateSemiAndAntiJoins, explodeProjectionToUnnest, preprocess,
 } from '../transforms';
-import {
+import type {
   Dialect,
+} from './dialect';
+import {
   Dialects,
   groupConcatSql, mergeWithoutTargetSql, renameFunc, timeStrToTimeSql, trimSql,
 } from './dialect';
@@ -349,4 +351,3 @@ export class Trino extends Presto {
   static Parser = TrinoParser;
   static Generator = TrinoGenerator;
 }
-Dialect.register(Dialects.TRINO, Trino);

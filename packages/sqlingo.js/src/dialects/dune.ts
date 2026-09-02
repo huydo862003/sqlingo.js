@@ -14,7 +14,7 @@ import type {
   TokenPair,
 } from '../tokens';
 import {
-  Dialect, Dialects,
+  Dialects,
 } from './dialect';
 import {
   Trino,
@@ -78,5 +78,3 @@ export class Dune extends Trino {
   static Tokenizer = DuneTokenizer;
   static Generator = DuneGenerator;
 }
-
-Dialect.register(Dialects.DUNE, Dune);

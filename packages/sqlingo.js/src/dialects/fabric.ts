@@ -35,11 +35,11 @@ import {
   Parser,
 } from '../parser';
 import {
+  Dialects, NormalizationStrategy,
+} from './dialect';
+import {
   TSQL,
 } from './tsql';
-import {
-  Dialect, NormalizationStrategy, Dialects,
-} from './dialect';
 
 function capDataTypePrecision (expression: DataTypeExpr, maxPrecision: number = 6): DataTypeExpr {
   const precisionParam = expression.find(DataTypeParamExpr);
@@ -327,5 +327,3 @@ export class Fabric extends TSQL {
   static Parser = FabricParser;
   static Generator = FabricGenerator;
 }
-
-Dialect.register(Dialects.FABRIC, Fabric);

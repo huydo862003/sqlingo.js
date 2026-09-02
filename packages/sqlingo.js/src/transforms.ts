@@ -16,6 +16,7 @@ import {
   ArrayExpr,
   ArraySizeExpr,
   BinaryExpr,
+  BracketExpr,
   cast,
   CastExpr,
   CoalesceExpr,
@@ -34,6 +35,7 @@ import {
   ExplodeOuterExpr,
   Expression,
   FromExpr,
+  func,
   FuncExpr,
   GenerateDateArrayExpr,
   GenerateSeriesExpr,
@@ -824,43 +826,33 @@ export function explodeProjectionToUnnest (
           const isPosexplode = explode instanceof PosexplodeExpr;
           let explodeArg = explode.args.this;
 
-          if (explode instanceof ExplodeOuterExpr) {
-            const bracket = explodeArg instanceof Expression ? explodeArg.args.expressions?.[0] : undefined;
+          if (explode instanceof ExplodeOuterExpr && explodeArg instanceof Expression) {
+            const bracket = new BracketExpr({
+              this: explodeArg,
+              expressions: [LiteralExpr.number(0)],
+            });
 
-            if (bracket instanceof Expression) {
-              bracket.setArgKey('safe', true);
-              bracket.setArgKey('offset', true);
+            bracket.setArgKey('safe', true);
+            bracket.setArgKey('offset', 1);
 
-              explodeArg = new AnonymousExpr({
-                this: 'IF',
-                expressions: [
-                  new EqExpr({
-                    this: new AnonymousExpr({
-                      this: 'ARRAY_SIZE',
-                      expressions: explodeArg !== undefined
-                        ? [
-                          new CoalesceExpr({
-                            expressions: [
-                              explodeArg,
-                              new ArrayExpr({
-                                expressions: [],
-                              }),
-                            ],
-                          }),
-                        ]
-                        : undefined,
+            explodeArg = func(
+              'IF',
+              func(
+                'ARRAY_SIZE',
+                new CoalesceExpr({
+                  expressions: [
+                    explodeArg,
+                    new ArrayExpr({
+                      expressions: [],
                     }),
-                    expression: LiteralExpr.number(0),
-                  }),
-                  new ArrayExpr({
-                    expressions: [bracket.copy()],
-                  }),
-                  ...(explodeArg !== undefined
-                    ? [explodeArg]
-                    : []),
-                ],
-              });
-            }
+                  ],
+                }),
+              ).eq(LiteralExpr.number(0)),
+              new ArrayExpr({
+                expressions: [bracket.copy()],
+              }),
+              explodeArg,
+            );
           }
 
           if (explodeArg instanceof ColumnExpr) {
@@ -1195,9 +1187,11 @@ export function eliminateFullOuterJoin (expression: Expression): Expression {
         this: antiJoinClause,
       }).not();
 
-      expressionCopy.where(antiJoinCheck);
+      const expressionCopyWithWhere = expressionCopy.where(antiJoinCheck, {
+        copy: false,
+      });
 
-      expressionCopy.setArgKey('with', undefined); // remove CTEs from RIGHT side
+      expressionCopyWithWhere.setArgKey('with', undefined); // remove CTEs from RIGHT side
       expression.setArgKey('order', undefined); // remove order by from LEFT side
 
       return union([

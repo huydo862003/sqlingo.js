@@ -80,7 +80,7 @@ class DrillTokenizer extends Tokenizer {
   }
 
   @cache
-  static get KEYWORDS (): Record<string, TokenType> {
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     const keywords = {
       ...Tokenizer.KEYWORDS,
     };
@@ -482,5 +482,3 @@ export class Drill extends Dialect {
   static Parser = DrillParser;
   static Generator = DrillGenerator;
 }
-
-Dialect.register(Dialects.DRILL, Drill);

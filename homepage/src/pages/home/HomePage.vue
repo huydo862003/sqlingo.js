@@ -195,13 +195,13 @@
             >@dbml/core</a>
             at work, a library that converts between DBML and SQL. Under the
             hood it uses ANTLR, and honestly it has been a mess:
-            <ul class="mt-4 ml-5 list-disc">
-              <li><code>@dbml/core</code> is 33MB, which is quite insane to be honest. It actually broke our CI with OOM errors.</li>
-              <li>We can't add more dialects without making the bundle even larger.</li>
-              <li>The parser is feature-incomplete and spits out user-unfriendly error messages like <code>No viable alternative at....</code></li>
-              <li>After all that, we only support 5 dialects.</li>
-            </ul>
           </p>
+          <ul class="mt-4 ml-5 list-disc leading-loose">
+            <li><code>@dbml/core</code> is 33MB, which is quite insane to be honest. It actually broke our CI with OOM errors.</li>
+            <li>We can't add more dialects without making the bundle even larger.</li>
+            <li>The parser is feature-incomplete and spits out user-unfriendly error messages like <code>No viable alternative at....</code></li>
+            <li>After all that, we only support 5 dialects.</li>
+          </ul>
 
           <p class="mt-4 leading-loose">
             At a hackathon I stumbled on
@@ -312,12 +312,12 @@ const demos: Record<
   }
 > = {
   parse: {
-    code: `import "@hdnax/sqlingo.js/mysql";
-import { parse } from "@hdnax/sqlingo.js";
+    code: `import { parse } from "@hdnax/sqlingo.js";
+import { MySQL } from "@hdnax/sqlingo.js/mysql";
 
 const [ast] = parse(
   "SELECT a, b FROM t WHERE a > 1",
-  { read: "mysql" },
+  { read: MySQL },
 );`,
     result: `Select(
   expressions=[Column(a), Column(b)],
@@ -327,13 +327,13 @@ const [ast] = parse(
     note: 'A full expression tree, mirroring SQLGlot\'s node classes one for one.',
   },
   transpile: {
-    code: `import "@hdnax/sqlingo.js/mysql";
-import "@hdnax/sqlingo.js/postgres";
-import { transpile } from "@hdnax/sqlingo.js";
+    code: `import { transpile } from "@hdnax/sqlingo.js";
+import { MySQL } from "@hdnax/sqlingo.js/mysql";
+import { Postgres } from "@hdnax/sqlingo.js/postgres";
 
 const [sql] = transpile(
   "SELECT DATE_SUB(d, INTERVAL 1 DAY) FROM t",
-  { read: "mysql", write: "postgres" },
+  { read: MySQL, write: Postgres },
 );`,
     result: 'SELECT d - INTERVAL \'1 DAY\' FROM t',
     note: 'Dialect quirks (quoting, date math, casts) are rewritten for the target.',

@@ -2577,8 +2577,8 @@ export class Parser {
       'CLUSTERED': function (this: Parser) {
         return this.parseClusteredBy();
       },
-      'COLLATE': function (this: Parser) {
-        return this.parsePropertyAssignment(CollatePropertyExpr);
+      'COLLATE': function (this: Parser, ...args: unknown[]) {
+        return this.parsePropertyAssignment(CollatePropertyExpr, args[0] as Record<string, unknown> | undefined);
       },
       'COMMENT': function (this: Parser) {
         return this.parsePropertyAssignment(SchemaCommentPropertyExpr);
@@ -6042,7 +6042,7 @@ export class Parser {
       CharacterSetPropertyExpr,
       {
         this: this.parseVarOrString(),
-        default: options?.default,
+        default: options?.default ?? false,
       },
     );
   }
@@ -10707,7 +10707,8 @@ export class Parser {
     // The VARIANT extract in Snowflake/Databricks is parsed as a JsonExtract; Snowflake uses the json_path in GET_PATH() while
     // Databricks transforms it back to the colon/dot notation
     if (0 < jsonPath.length) {
-      const jsonPathExpr = this.dialect.toJsonPath?.(LiteralExpr.string('.' + jsonPath.join('.')));
+      const jsonPathStr = jsonPath.join('.');
+      const jsonPathExpr = this.dialect.toJsonPath?.(LiteralExpr.string(jsonPathStr));
 
       if (jsonPathExpr) {
         jsonPathExpr.setArgKey('escape', escape);
@@ -12081,7 +12082,7 @@ export class Parser {
       : undefined;
   }
 
-  parseCsv<E extends Expression> (parseMethod: () => E | undefined, options: {
+  parseCsv<E extends Expression | Expression[]> (parseMethod: () => E | undefined, options: {
     sep?: TokenType;
   } = {}): E[] {
     const {
@@ -12093,7 +12094,7 @@ export class Parser {
       : [];
 
     while (this.match(sep)) {
-      this.addComments(parseResult);
+      if (parseResult instanceof Expression) this.addComments(parseResult);
       parseResult = parseMethod();
       if (parseResult !== undefined) {
         items.push(parseResult);

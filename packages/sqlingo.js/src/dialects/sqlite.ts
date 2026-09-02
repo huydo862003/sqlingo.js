@@ -838,5 +838,3 @@ export class SQLite extends Dialect {
   static Parser = SQLiteParser;
   static Generator = SQLiteGenerator;
 }
-
-Dialect.register(Dialects.SQLITE, SQLite);

@@ -1,16 +1,57 @@
-// Side-effect imports: each file calls Dialect.register() on load
-import '@hdnax/sqlingo.js/mysql';
-import '@hdnax/sqlingo.js/postgres';
-import '@hdnax/sqlingo.js/sqlite';
-import '@hdnax/sqlingo.js/duckdb';
-import '@hdnax/sqlingo.js/bigquery';
-import '@hdnax/sqlingo.js/snowflake';
-import '@hdnax/sqlingo.js/spark';
-import '@hdnax/sqlingo.js/hive';
-import '@hdnax/sqlingo.js/trino';
-import '@hdnax/sqlingo.js/mssql';
-import '@hdnax/sqlingo.js/oracle';
-import '@hdnax/sqlingo.js/redshift';
+import {
+  Dialect,
+} from '@hdnax/sqlingo.js';
+import {
+  MySQL,
+} from '@hdnax/sqlingo.js/mysql';
+import {
+  Postgres,
+} from '@hdnax/sqlingo.js/postgres';
+import {
+  SQLite,
+} from '@hdnax/sqlingo.js/sqlite';
+import {
+  DuckDB,
+} from '@hdnax/sqlingo.js/duckdb';
+import {
+  BigQuery,
+} from '@hdnax/sqlingo.js/bigquery';
+import {
+  Snowflake,
+} from '@hdnax/sqlingo.js/snowflake';
+import {
+  Spark,
+} from '@hdnax/sqlingo.js/spark';
+import {
+  Hive,
+} from '@hdnax/sqlingo.js/hive';
+import {
+  Trino,
+} from '@hdnax/sqlingo.js/trino';
+import {
+  TSQL,
+} from '@hdnax/sqlingo.js/mssql';
+import {
+  Oracle,
+} from '@hdnax/sqlingo.js/oracle';
+import {
+  Redshift,
+} from '@hdnax/sqlingo.js/redshift';
+
+Dialect.register(
+  MySQL,
+  Postgres,
+  SQLite,
+  DuckDB,
+  BigQuery,
+  Snowflake,
+  Spark,
+  Hive,
+  Trino,
+  TSQL,
+  Oracle,
+  Redshift,
+);
 
 export const DIALECTS = [
   {

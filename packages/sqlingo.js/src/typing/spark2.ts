@@ -2,6 +2,7 @@ import {
   Expression,
   DataTypeExpr,
   AddMonthsExpr,
+  TsOrDsAddExpr,
   ApproxQuantileExpr,
   Atan2Expr,
   AtTimeZoneExpr,
@@ -106,6 +107,9 @@ export class Spark2Typing {
     });
 
     map.set(AddMonthsExpr, {
+      returns: DataTypeExprKind.DATE,
+    });
+    map.set(TsOrDsAddExpr, {
       returns: DataTypeExprKind.DATE,
     });
     map.set(ApproxQuantileExpr, {

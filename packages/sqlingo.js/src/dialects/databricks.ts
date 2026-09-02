@@ -58,11 +58,13 @@ import {
 import {
   Spark,
 } from './spark';
+import type {
+  Dialect,
+} from './dialect';
 import {
   dateDeltaSql,
   buildDateDelta,
-  buildFormattedTime,
-  Dialect, Dialects,
+  buildFormattedTime, Dialects,
   timestampTruncSql,
   groupConcatSql,
 } from './dialect';
@@ -211,6 +213,7 @@ class DatabricksGenerator extends Spark.Generator {
   static JSON_PATH_SINGLE_QUOTE_ESCAPE = false;
   static QUOTE_JSON_PATH = false;
   static PARSE_JSON_NAME = 'PARSE_JSON' as const;
+  static DECLARE_DEFAULT_ASSIGNMENT = '=';
 
   @cache
   static get TYPE_MAPPING () {
@@ -413,5 +416,3 @@ export class Databricks extends Spark {
     return coercionMap;
   }
 }
-
-Dialect.register(Dialects.DATABRICKS, Databricks);

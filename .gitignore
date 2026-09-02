@@ -10,7 +10,7 @@ build/
 # Documentation
 doc/
 README.repo.md
-homepage/api-reference/
+homepage/api-reference/dist/
 
 # Environment
 .env

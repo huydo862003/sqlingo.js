@@ -1819,5 +1819,3 @@ export class Presto extends Dialect {
   static Parser = PrestoParser;
   static Generator = PrestoGenerator;
 }
-
-Dialect.register(Dialects.PRESTO, Presto);

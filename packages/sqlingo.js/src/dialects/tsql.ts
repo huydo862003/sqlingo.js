@@ -2447,6 +2447,7 @@ export class TSQLGenerator extends Generator {
 
 export class TSQL extends Dialect {
   static DIALECT_NAME = Dialects.TSQL;
+  static DIALECT_ALIASES = ['mssql'];
   static SUPPORTS_SEMI_ANTI_JOIN = false;
   static LOG_BASE_FIRST = false;
   static TYPED_DIVISION = true;
@@ -2606,6 +2607,3 @@ export class TSQL extends Dialect {
   static Parser = TSQLParser;
   static Generator = TSQLGenerator;
 }
-
-Dialect.register(Dialects.TSQL, TSQL);
-Dialect.register('mssql', TSQL);

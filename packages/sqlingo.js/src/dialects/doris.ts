@@ -70,9 +70,12 @@ import type {
 import {
   MySQL,
 } from './mysql';
+import type {
+  Dialect,
+} from './dialect';
 import {
-  approxCountDistinctSql,
-  Dialect, Dialects,
+  approxCountDistinctSql, Dialects,
+  propertySql,
   renameFunc,
   timeFormat,
   unitToStr,
@@ -266,7 +269,7 @@ class DorisParser extends MySQL.Parser {
 
     // Doris-specific bracket syntax: VALUES [(...), (...))
     this.match(TokenType.L_BRACKET);
-    const values = this.parseWrappedCsv(() => this.parseExpression());
+    const values = this.parseCsv(() => this.parseWrappedCsv(() => this.parseExpression()));
 
     this.match(TokenType.R_BRACKET);
     this.match(TokenType.R_PAREN);
@@ -488,7 +491,7 @@ class DorisGenerator extends MySQL.Generator {
       [
         PropertyExpr,
         function (this: Generator, e: PropertyExpr) {
-          return this.propertySql(e);
+          return propertySql.call(this, e);
         },
       ],
       [
@@ -1149,5 +1152,3 @@ export class Doris extends MySQL {
   static Parser = DorisParser;
   static Generator = DorisGenerator;
 }
-
-Dialect.register(Dialects.DORIS, Doris);

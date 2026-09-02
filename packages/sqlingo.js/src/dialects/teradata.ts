@@ -807,5 +807,3 @@ export class Teradata extends Dialect {
   static Parser = TeradataParser;
   static Generator = TeradataGenerator;
 }
-
-Dialect.register(Dialects.TERADATA, Teradata);

@@ -296,6 +296,7 @@ import {
   AlterRenameExpr,
   BracketExpr,
   DateAddExpr,
+  DateDiffExpr,
   RandExpr,
   WindowExpr,
   WithTableHintExpr,
@@ -931,7 +932,7 @@ export class Generator {
 
   // Whether a multi-argument DECODE(...) function is supported. If not, a CASE expression is generated
   static SUPPORTS_DECODE_CASE = true;
-  static ON_CONDITION_EMPTY_BEFORE_ERROR = false;
+  static ON_CONDITION_EMPTY_BEFORE_ERROR = true;
 
   // Whether SYMMETRIC and ASYMMETRIC flags are supported with BETWEEN expression
   static SUPPORTS_BETWEEN_FLAGS = false;
@@ -3204,7 +3205,7 @@ export class Generator {
 
   cloneSql (expression: CloneExpr): string {
     const thisStr = this.sql(expression, 'this');
-    const shallow = expression.args.shallow ? 'ShaLLOW ' : '';
+    const shallow = expression.args.shallow ? 'SHALLOW ' : '';
     const keyword = (expression.args.copy && this._constructor.SUPPORTS_TABLE_COPY) ? 'COPY' : 'CLONE';
 
     return `${shallow}${keyword} ${thisStr}`;
@@ -4288,7 +4289,7 @@ export class Generator {
   introducerSql (expression: IntroducerExpr): string {
     const thisStr = this.sql(expression, 'this');
 
-    return `_${thisStr} ${this.sql(expression, 'expression')}`;
+    return `${thisStr} ${this.sql(expression, 'expression')}`;
   }
 
   killSql (expression: KillExpr): string {
@@ -5115,7 +5116,7 @@ export class Generator {
   }
 
   setItemSql (expression: SetItemExpr): string {
-    let kind = this.sql(expression, 'kind');
+    let kind = this.sql(expression, 'kind').toUpperCase();
 
     if (!this._constructor.SET_ASSIGNMENT_REQUIRES_VARIABLE_KEYWORD && kind === 'VARIABLE') {
       kind = '';
@@ -6566,14 +6567,18 @@ export class Generator {
       const literalAlias = alias instanceof LiteralExpr;
 
       if (identifierAlias && !this._constructor.UNPIVOT_ALIASES_ARE_IDENTIFIERS) {
-        alias.replace(new LiteralExpr({
+        const converted = new LiteralExpr({
           this: (alias as Expression).name,
           isString: true,
-        }));
+        });
+        const aliasSql = this.sql(converted);
+
+        return `${this.sql(expression, 'this')} AS ${aliasSql}`;
       } else if (!identifierAlias && literalAlias && this._constructor.UNPIVOT_ALIASES_ARE_IDENTIFIERS) {
-        alias.replace(new IdentifierExpr({
-          this: (alias as Expression).name,
-        }));
+        const converted = toIdentifier((alias as Expression).name);
+        const aliasSql = this.sql(converted);
+
+        return `${this.sql(expression, 'this')} AS ${aliasSql}`;
       }
     }
 
@@ -7411,7 +7416,7 @@ export class Generator {
     const toClause = this.sql(expression, 'to');
 
     if (toClause) {
-      return `${(expression._constructor as typeof FuncExpr).sqlName}(${this.sql(expression, 'this')} TO ${toClause})`;
+      return `${(expression._constructor as typeof FuncExpr).sqlName()}(${this.sql(expression, 'this')} TO ${toClause})`;
     }
 
     return this.functionFallbackSql(expression);
@@ -8036,8 +8041,8 @@ export class Generator {
       [
         thisStr,
         expression.args.time,
-        ...(expression.args.numRows || [undefined]),
-        ...(expression.args.ignoreFeatureNulls || [undefined]),
+        expression.args.numRows,
+        expression.args.ignoreFeatureNulls,
       ],
     );
   }
@@ -8064,7 +8069,7 @@ export class Generator {
         expression.args.queryColumnToSearch,
         expression.args.topK,
         expression.args.distanceType,
-        ...(expression.args.options || [undefined]),
+        expression.args.options,
       ],
     );
   }
@@ -8139,7 +8144,9 @@ export class Generator {
       return this.sql(thisArg);
     }
 
-    return this.sql(cast(thisArg, DataTypeExprKind.TIMESTAMP));
+    return this.sql(cast(thisArg, DataTypeExprKind.TIMESTAMP, {
+      dialect: this.dialect,
+    }));
   }
 
   tsOrDsToDatetimeSql (expression: TsOrDsToDatetimeExpr): string {
@@ -8151,7 +8158,9 @@ export class Generator {
       return this.sql(thisArg);
     }
 
-    return this.sql(cast(thisArg, DataTypeExprKind.DATETIME));
+    return this.sql(cast(thisArg, DataTypeExprKind.DATETIME, {
+      dialect: this.dialect,
+    }));
   }
 
   tsOrDsToDateSql (expression: TsOrDsToDateExpr): string {
@@ -8195,15 +8204,14 @@ export class Generator {
   }
 
   unixDateSql (expression: UnixDateExpr): string {
-    const startDate = cast(LiteralExpr.string('1970-01-01'), DataTypeExprKind.DATE);
+    const thisArg = expression.args.this;
 
-    return this.func(
-      'DATEDIFF',
-      [
-        expression.args.this,
-        startDate,
-        'day',
-      ],
+    return this.sql(
+      new DateDiffExpr({
+        this: thisArg instanceof Expression ? thisArg : undefined,
+        expression: cast(LiteralExpr.string('1970-01-01'), DataTypeExprKind.DATE),
+        unit: var_('day'),
+      }),
     );
   }
 
@@ -9270,7 +9278,7 @@ export class Generator {
 
     const everySql = this.sql(every as Expression);
 
-    return `START(${start}) END(${end}) EVERY(${everySql})`;
+    return `START (${start}) END (${end}) EVERY (${everySql})`;
   }
 
   unpivotColumnsSql (expression: UnpivotColumnsExpr): string {
@@ -9367,7 +9375,7 @@ export class Generator {
 
     innerExpression = innerExpression ? ` ${innerExpression}` : '';
 
-    return `ANALYZE${options}${kind}${thisStr}${mode}${properties}${partition}${innerExpression}`;
+    return `ANALYZE${options}${kind}${thisStr}${partition}${mode}${innerExpression}${properties}`;
   }
 
   xmlTableSql (expression: XmlTableExpr): string {

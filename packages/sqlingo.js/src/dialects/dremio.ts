@@ -515,5 +515,3 @@ export class Dremio extends Dialect {
   static Parser = DremioParser;
   static Generator = DremioGenerator;
 }
-
-Dialect.register(Dialects.DREMIO, Dremio);

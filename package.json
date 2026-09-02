@@ -9,15 +9,16 @@
 		"changeset": "changeset",
 		"version": "changeset version",
 		"release": "pnpm --filter @hdnax/sqlingo.js run build && changeset publish && git push --follow-tags",
-		"doc": "pnpm --filter @hdnax/sqlingo.js-homepage run build && pnpm --filter @hdnax/sqlingo.js exec typedoc"
+		"doc": "pnpm --filter @hdnax/sqlingo.js-homepage run build"
 	},
 	"devDependencies": {
-		"@changesets/cli": "^2.29.8",
-		"@hdnax/nuclint": "^0.17.4",
-		"eslint": "^9.39.2",
-		"eslint-plugin-vue": "^10.9.1",
-		"tailwindcss": "^4.2.4",
-		"vue-tsc": "^3.2.8"
+		"@changesets/cli": "^2.31.1",
+		"@hdnax/nuclint": "^0.17.5",
+		"eslint": "^9.39.5",
+		"eslint-plugin-unicorn": "^74.0.0",
+		"eslint-plugin-vue": "^10.10.0",
+		"tailwindcss": "^4.3.3",
+		"vue-tsc": "^3.3.11"
 	},
 	"pnpm": {
 		"overrides": {
@@ -29,8 +30,8 @@
 			"read-yaml-file": "^2.1.0"
 		},
 		"onlyBuiltDependencies": [
-			"esbuild",
-			"unrs-resolver"
+			"@typerighter/rpc-server",
+			"esbuild"
 		]
 	}
 }

@@ -477,5 +477,3 @@ export class Athena extends Dialect {
   static Parser = AthenaParser;
   static Generator = AthenaGenerator;
 }
-
-Dialect.register(Dialects.ATHENA, Athena);

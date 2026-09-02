@@ -86,11 +86,13 @@ import {
 import {
   SparkTyping,
 } from '../typing/spark';
+import type {
+  Dialect,
+} from './dialect';
 import {
   arrayAppendSql,
   dateDeltaToBinaryIntervalOp,
-  unitToVar,
-  Dialect, Dialects,
+  unitToVar, Dialects,
   renameFunc,
   groupConcatSql as baseGroupConcatSql,
   buildLike,
@@ -216,7 +218,7 @@ class SparkTokenizer extends Spark2.Tokenizer {
   static STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS = false;
 
   @cache
-  static get KEYWORDS () {
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     return {
       ...Spark2.Tokenizer.KEYWORDS,
       DECLARE: TokenType.DECLARE,
@@ -697,5 +699,3 @@ export class Spark extends Spark2 {
   static Parser = SparkParser;
   static Generator = SparkGenerator;
 }
-
-Dialect.register(Dialects.SPARK, Spark);

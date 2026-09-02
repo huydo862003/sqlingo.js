@@ -824,7 +824,7 @@ export enum ExpressionKey {
   STABILITY_PROPERTY = 'stabilityProperty',
   STANDARD_HASH = 'standardHash',
   STAR = 'star',
-  STARTS_WITH = 'startswith',
+  STARTS_WITH = 'startsWith',
   STAR_MAP = 'starMap',
   STDDEV = 'stddev',
   STDDEV_POP = 'stddevPop',
