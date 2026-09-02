@@ -181,7 +181,7 @@ import {
 } from '../typing/hive';
 import {
   TypeAnnotator,
-} from '../optimizer';
+} from '../optimizer/annotate_types';
 import {
   approxCountDistinctSql,
   argMaxOrMinNoCount,

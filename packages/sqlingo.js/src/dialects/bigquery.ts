@@ -204,7 +204,7 @@ import {
 } from '../port_internals';
 import {
   JsonPathTokenizer,
-} from '../jsonpath';
+} from '../jsonpath/tokenizer';
 import {
   eliminateDistinctOn,
   eliminateSemiAndAntiJoins,

@@ -48,7 +48,7 @@ import {
 } from '../optimizer';
 import {
   JsonPathTokenizer,
-} from '../jsonpath';
+} from '../jsonpath/tokenizer';
 import {
   anyToExists, eliminateDistinctOn, preprocess, unnestToExplode,
 } from '../transforms';

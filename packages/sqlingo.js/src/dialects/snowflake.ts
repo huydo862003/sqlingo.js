@@ -240,7 +240,7 @@ import {
 } from '../helper';
 import {
   JsonPathTokenizer,
-} from '../jsonpath';
+} from '../jsonpath/tokenizer';
 import {
   annotateTypes,
   buildScope, findAllInScope,
