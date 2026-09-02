@@ -498,9 +498,7 @@ export function buildJsonStripNulls (args: Expression[]): JsonStripNullsExpr {
  */
 export function arrayContainsSql (this: Generator, expression: ArrayContainsExpr): string {
   const select = new SelectExpr({
-    expressions: [
-      LiteralExpr.number(1),
-    ],
+    expressions: [LiteralExpr.number(1)],
   })
     .from(
       new UnnestExpr({

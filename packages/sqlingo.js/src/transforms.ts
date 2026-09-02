@@ -831,15 +831,20 @@ export function explodeProjectionToUnnest (
               this: explodeArg,
               expressions: [LiteralExpr.number(0)],
             });
+
             bracket.setArgKey('safe', true);
             bracket.setArgKey('offset', 1);
 
-            explodeArg = func('IF',
-              func('ARRAY_SIZE',
+            explodeArg = func(
+              'IF',
+              func(
+                'ARRAY_SIZE',
                 new CoalesceExpr({
                   expressions: [
                     explodeArg,
-                    new ArrayExpr({ expressions: [] }),
+                    new ArrayExpr({
+                      expressions: [],
+                    }),
                   ],
                 }),
               ).eq(LiteralExpr.number(0)),
@@ -1182,7 +1187,9 @@ export function eliminateFullOuterJoin (expression: Expression): Expression {
         this: antiJoinClause,
       }).not();
 
-      const expressionCopyWithWhere = expressionCopy.where(antiJoinCheck, { copy: false });
+      const expressionCopyWithWhere = expressionCopy.where(antiJoinCheck, {
+        copy: false,
+      });
 
       expressionCopyWithWhere.setArgKey('with', undefined); // remove CTEs from RIGHT side
       expression.setArgKey('order', undefined); // remove order by from LEFT side

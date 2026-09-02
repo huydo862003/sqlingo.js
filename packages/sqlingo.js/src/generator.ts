@@ -6572,10 +6572,12 @@ export class Generator {
           isString: true,
         });
         const aliasSql = this.sql(converted);
+
         return `${this.sql(expression, 'this')} AS ${aliasSql}`;
       } else if (!identifierAlias && literalAlias && this._constructor.UNPIVOT_ALIASES_ARE_IDENTIFIERS) {
         const converted = toIdentifier((alias as Expression).name);
         const aliasSql = this.sql(converted);
+
         return `${this.sql(expression, 'this')} AS ${aliasSql}`;
       }
     }
@@ -8142,7 +8144,9 @@ export class Generator {
       return this.sql(thisArg);
     }
 
-    return this.sql(cast(thisArg, DataTypeExprKind.TIMESTAMP, { dialect: this.dialect }));
+    return this.sql(cast(thisArg, DataTypeExprKind.TIMESTAMP, {
+      dialect: this.dialect,
+    }));
   }
 
   tsOrDsToDatetimeSql (expression: TsOrDsToDatetimeExpr): string {
@@ -8154,7 +8158,9 @@ export class Generator {
       return this.sql(thisArg);
     }
 
-    return this.sql(cast(thisArg, DataTypeExprKind.DATETIME, { dialect: this.dialect }));
+    return this.sql(cast(thisArg, DataTypeExprKind.DATETIME, {
+      dialect: this.dialect,
+    }));
   }
 
   tsOrDsToDateSql (expression: TsOrDsToDateExpr): string {

@@ -6271,6 +6271,7 @@ class DuckDBGenerator extends Generator {
   numberToStrSql (expression: NumberToStrExpr): string {
     if (expression.args.culture) {
       this.unsupported('DuckDB does not support the culture argument in NumberToStr');
+
       return this.functionFallbackSql(expression);
     }
 
@@ -6567,11 +6568,13 @@ class DuckDBGenerator extends Generator {
 
   trimSql (expression: TrimExpr): string {
     const castedThis = castToVarchar(expression.args.this);
+
     if (castedThis) {
       expression.setArgKey('this', castedThis);
     }
     if (expression.args.expression instanceof Expression) {
       const castedExpr = castToVarchar(expression.args.expression);
+
       if (castedExpr) {
         expression.setArgKey('expression', castedExpr);
       }

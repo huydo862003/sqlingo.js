@@ -26,6 +26,7 @@ export default [
       'no-restricted-imports': 'off',
       'custom/no-import-alias': 'off',
       'unicorn/prevent-abbreviations': 'off',
+      'unicorn/name-replacements': 'off',
     },
   },
   {

@@ -707,7 +707,9 @@ class MySQLParser extends Parser {
           }),
         });
 
-        return new ParenExpr({ this: diff.add(1) });
+        return new ParenExpr({
+          this: diff.add(1),
+        });
       },
       VERSION: (args: unknown[]) => CurrentVersionExpr.fromArgList(args),
       WEEK: (args: Expression[]): WeekExpr =>

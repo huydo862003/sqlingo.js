@@ -27,7 +27,7 @@ import {
   Dialect,
   type DialectType,
 } from '../dialects/dialect';
-import {
+import type {
   JsonPathTokenizer,
 } from './tokenizer';
 

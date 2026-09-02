@@ -24097,7 +24097,9 @@ export class JsonArrayExpr extends FuncExpr {
   }
 
   static fromArgList<T extends typeof FuncExpr> (this: T, args: unknown[]): InstanceType<T> {
-    return new this({ expressions: args } as FuncExprArgs) as InstanceType<T>;
+    return new this({
+      expressions: args,
+    } as FuncExprArgs) as InstanceType<T>;
   }
 
   static {
