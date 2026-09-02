@@ -65,8 +65,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3))
       typerighter:
-        specifier: ^0.21.0
-        version: 0.21.0(@types/markdown-it@14.2.0)(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0)
+        specifier: ^0.22.1
+        version: 0.22.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0)
       vue:
         specifier: ^3.5.42
         version: 3.5.42(typescript@6.0.3)
@@ -539,20 +539,12 @@ packages:
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
 
-  '@mdit-vue/plugin-frontmatter@3.0.2':
-    resolution: {integrity: sha512-QKKgIva31YtqHgSAz7S7hRcL7cHXiqdog4wxTfxeQCHo+9IP4Oi5/r1Y5E93nTPccpadDWzAwr3A0F+kAEnsVQ==}
-    engines: {node: '>=20.0.0'}
-
   '@mdit-vue/plugin-headers@3.0.2':
     resolution: {integrity: sha512-Z3PpDdwBTO5jlW2r617tQibkwtCc5unTnj/Ew1SCxTQaXjtKgwP9WngdSN+xxriISHoNOYzwpoUw/1CW8ntibA==}
     engines: {node: '>=20.0.0'}
 
   '@mdit-vue/plugin-title@3.0.2':
     resolution: {integrity: sha512-KTDP7s68eKTwy4iYp5UauQuVJf+tDMdJZMO6K4feWYS8TX95ItmcxyX7RprfBWLTUwNXBYOifsL6CkIGlWcNjA==}
-    engines: {node: '>=20.0.0'}
-
-  '@mdit-vue/plugin-toc@3.0.2':
-    resolution: {integrity: sha512-Dz0dURjD5wR4nBxFMiqb0BTGRAOkCE60byIemqLqnkF6ORKKJ8h5aLF5J5ssbLO87hwu81IikHiaXvqoiEneoQ==}
     engines: {node: '>=20.0.0'}
 
   '@mdit-vue/shared@3.0.2':
@@ -572,10 +564,10 @@ packages:
       markdown-it:
         optional: true
 
-  '@mdit/plugin-anchor@1.1.3':
-    resolution: {integrity: sha512-lkB9c+NTR//ZLv4MgrDb2ewYulr/WOCWPx0aQC/HbccWJc0JVPMeYwalWfzj517pvKbHGQdOpGRTcFcnn+NG0g==}
+  '@mdit/plugin-anchor@2.1.0':
+    resolution: {integrity: sha512-UnjMDFgMyZsjKhCS8By1vM39V8HsZtRvwDaMO/Xi9JLjoqhOrHbOiXf+6R7W/M+DkS/lLLr6HkXdj39V6jipCA==}
     peerDependencies:
-      markdown-it: ^14.2.0
+      markdown-it: ^15.0.0
 
   '@mdit/plugin-attrs@1.3.0':
     resolution: {integrity: sha512-vS16iLGDAYqoRrHGU4S5u5lZKajHER1REbz40CsiZWzM7VmbHG/SiD00DwRDDs9xedXKcmJCZHqOcrPbjAkNdw==}
@@ -586,11 +578,11 @@ packages:
       markdown-it:
         optional: true
 
-  '@mdit/plugin-container@1.0.2':
-    resolution: {integrity: sha512-gCpqmadamWVbDI7+OgkywDGjfgqxrjZo3U+iK+sH7vERnZyX4sx1X65pXbqrem8Q5/4yO5t0d+kWkPC733ceRw==}
+  '@mdit/plugin-container@2.0.0':
+    resolution: {integrity: sha512-g5dcpOpXRrpp0Sy3A6HPuAKPHb5oo6m4V/1Ba4xnGV3MNSQ6ca0jRXGZmKkqQLGbXdTv4jNp/9UINm6NetDH2g==}
     engines: {node: '>=22'}
     peerDependencies:
-      markdown-it: ^14.2.0
+      markdown-it: ^15.0.0
     peerDependenciesMeta:
       markdown-it:
         optional: true
@@ -1158,11 +1150,11 @@ packages:
   '@tybys/wasm-util@0.10.3':
     resolution: {integrity: sha512-F3fo1MYrRJYL3zER0OUOmkutjr1Vp23m7OsSgp7nq4SP6OqX6C/56XFIPAl5bt3zaBRjmW7SGz3u/6LwFpYcOg==}
 
-  '@typerighter/rpc-client@0.21.0':
-    resolution: {integrity: sha512-HopoUDbIBCW5c3qKVrYbhtdGcL0fl98lYsLFNydDBBB0FWFpMootB71w8nvRfNvpCBazLvhIJBFwALrVtmNihg==}
+  '@typerighter/rpc-client@0.22.1':
+    resolution: {integrity: sha512-SV6WniYwbu/1epIBdjUv5C665pWLAjvI/OY3GnoB/0NN78AY13QKQcKfG46Nc+wBMo33/WLjcdtQgfzF1dgMtg==}
 
-  '@typerighter/rpc-server@0.21.0':
-    resolution: {integrity: sha512-O6TqnoV4oU9kFTINN3nbqyiqWjfcn2DDsjUSsJEz8V4o+zRidxzbJu0/RAGfAQronyjGw126TiPTPUTsAQqLKw==}
+  '@typerighter/rpc-server@0.22.1':
+    resolution: {integrity: sha512-ekCA7wmpsPqK4cMMrMU1KVxEm/YU+H5j/UhmwLzGk/FRrOf7wU7fGvwePvxXerUCvzPI/VyPETho3BOXmn/eoA==}
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -2041,10 +2033,6 @@ packages:
   exsolve@1.1.1:
     resolution: {integrity: sha512-9U/jZUgjnSGyntRr6y5Muu1MJcwFl6kPu7k8qLF0IMNfLqvw0NZ4nnVDq0RVoZ0RvCyumib4Ez3KYrVfilrw+g==}
 
-  extend-shallow@2.0.1:
-    resolution: {integrity: sha512-zCnTtlxNoAiDc3gqY2aYAWFx7XWWiasuF2K8Me5WbN8otHKTUKBwjPtNpRs/rbUZm7KxWAaNj7P1a/p52GbVug==}
-    engines: {node: '>=0.10.0'}
-
   extendable-error@0.1.7:
     resolution: {integrity: sha512-UOiS2in6/Q0FK0R0q6UY9vYpQ21mr/Qn1KOnte7vsACuNJf514WvCCUHSRCPcgjPT2bAhNIJdlE6bVap1GKmeg==}
 
@@ -2171,10 +2159,6 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  gray-matter@4.0.3:
-    resolution: {integrity: sha512-5v6yZd4JK3eMI3FqqCouswVqwugaA9r4dNZB1wwcmrD02QkV5H0y7XBQW8QwQqEaZY1pM9aqORSORhJRdNK44Q==}
-    engines: {node: '>=6.0'}
-
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
@@ -2218,11 +2202,6 @@ packages:
     resolution: {integrity: sha512-YYNsSlXBjMk92SKnkwvB5LOVSa6OznlFUGcsvrFgNJbJCd0M1XKeFVRc8ZByeCqz32FivYNHJVooLmdqrmvp/Q==}
     engines: {node: '>= 4'}
 
-  image-size@2.0.2:
-    resolution: {integrity: sha512-IRqXKlaXwgSMAMtpNzZa1ZAe8m+Sa1770Dhk8VkSsP9LS+iHD62Zd8FQKs8fbPiagBE7BzoFX23cxFnwshpV6w==}
-    engines: {node: '>=16.x'}
-    hasBin: true
-
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
     engines: {node: '>=6'}
@@ -2238,10 +2217,6 @@ packages:
   is-builtin-module@5.0.0:
     resolution: {integrity: sha512-f4RqJKBUe5rQkJ2eJEJBXSticB3hGbN9j0yxxMQFqIW89Jp9WYFtzfTcRlstDKVUTRzSOTLKRfO9vIztenwtxA==}
     engines: {node: '>=18.20'}
-
-  is-extendable@0.1.1:
-    resolution: {integrity: sha512-5BMULNob1vgFX6EjQw5izWDxrecWK9AM72rugNr0TFldMOi0fj6Jk+zeKIt0xGj4cEfQIJth4w3OKWOJ4f+AFw==}
-    engines: {node: '>=0.10.0'}
 
   is-extglob@2.1.1:
     resolution: {integrity: sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==}
@@ -2314,10 +2289,6 @@ packages:
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
-
-  kind-of@6.0.3:
-    resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
-    engines: {node: '>=0.10.0'}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -2516,23 +2487,8 @@ packages:
     resolution: {integrity: sha512-ayF7iT+44LXdxJLTrTd3TLQpFDDvPCBxXxbv+pMUSuHA5Q8zyAfwkRP6aHHwNVFBUFWtxAHqwNJxF8vMZLAbVg==}
     engines: {node: '>=18'}
 
-  markdown-it-anchor@9.2.1:
-    resolution: {integrity: sha512-p6APiLJDFAW2GEvaavDvhIBn7jrX2jLv77NkBGgNacFTurbORYc4pyYySg/mI6mpR6cHQuAtzKtmqgQr4K8dsQ==}
-    peerDependencies:
-      '@types/markdown-it': '*'
-      markdown-it: '*'
-
   markdown-it-async@2.2.0:
     resolution: {integrity: sha512-sITME+kf799vMeO/ww/CjH6q+c05f6TLpn6VOmmWCGNqPJzSh+uFgZoMB9s0plNtW6afy63qglNAC3MhrhP/gg==}
-
-  markdown-it-container@4.0.0:
-    resolution: {integrity: sha512-HaNccxUH0l7BNGYbFbjmGpf5aLHAMTinqRZQAEQbMr2cdD3z91Q6kIo1oUn1CQndkT03jat6ckrdRYuwwqLlQw==}
-
-  markdown-it-emoji@3.1.0:
-    resolution: {integrity: sha512-NhmMEH2ywduD4Nty1E8uB5NqfLhAT1VR0dyvoJyStKOqCzbZmVdn/+8wj7zpDsb/fLBikpCPsWwxqKlvMmbz4g==}
-
-  markdown-it-task-lists@2.1.1:
-    resolution: {integrity: sha512-TxFAc76Jnhb2OUu+n3yz9RMu4CwGfaT788br6HhEDlvWfdeJcLUsxk1Hgw2yJio0OXsxv7pyIPmvECY7bMbluA==}
 
   markdown-it@14.3.1:
     resolution: {integrity: sha512-4Ej49aYTDFIQ+uBkfX8GBvJGccoARxxPep+7aWTs55ozbjQJpW9M26Fe53vnGgvLeVzva/amzjQQaQu9w0vMhA==}
@@ -2901,10 +2857,6 @@ packages:
   scule@1.3.0:
     resolution: {integrity: sha512-6FtHJEvt+pVMIB9IBY+IcCJ6Z5f1iQnytgyfKMhDKgmzYG+TeH/wx1y3l27rshSbLiSanrR9ffZDrEsmjlQF2g==}
 
-  section-matter@1.0.0:
-    resolution: {integrity: sha512-vfD3pmTzGpufjScBh50YHKzEu2lxBWhVEHsNGoEXmCmn2hKGfeNLYMzCJpe8cD7gqX7TJluOVpBkAequ6dgMmA==}
-    engines: {node: '>=4'}
-
   semver@7.8.5:
     resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
     engines: {node: '>=10'}
@@ -2970,10 +2922,6 @@ packages:
   strip-ansi@6.0.1:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
-
-  strip-bom-string@1.0.0:
-    resolution: {integrity: sha512-uCC2VHvQRYu+lMh4My/sFNmF2klFymLX1wHJeXnbEJERpV/ZsVuonzerjfrGpIGF7LBVa1O7i9kjiWvJiFck8g==}
-    engines: {node: '>=0.10.0'}
 
   strip-bom@3.0.0:
     resolution: {integrity: sha512-vavAMRXOgBVNF6nyEEmL3DBK19iRpDcoIwW+swQ+CbGiu7lju6t+JklA1MHweoWtadgt4ISVUsXLyDq34ddcwA==}
@@ -3119,8 +3067,8 @@ packages:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
 
-  typerighter@0.21.0:
-    resolution: {integrity: sha512-SKnFfTRkvO6iDKoyCxubagBnjNONIYbJIMpwDjDKkcy5tB/ZBjwudtx7I8NX4a4jaG123lw/f7oP7zfzMCLNpA==}
+  typerighter@0.22.1:
+    resolution: {integrity: sha512-qGRboQEWIazGGwpjqjv4IDnbz3mNZ/HlIje9zm0dYvUELoWBWByeN4BXx8FwnvrbIrrHG3yJxgfIPpMc4Ko98w==}
     hasBin: true
 
   typescript-eslint@8.59.2:
@@ -3937,13 +3885,6 @@ snapshots:
       globby: 11.1.0
       read-yaml-file: 2.1.0
 
-  '@mdit-vue/plugin-frontmatter@3.0.2':
-    dependencies:
-      '@mdit-vue/types': 3.0.2
-      '@types/markdown-it': 14.2.0
-      gray-matter: 4.0.3
-      markdown-it: 14.3.1
-
   '@mdit-vue/plugin-headers@3.0.2':
     dependencies:
       '@mdit-vue/shared': 3.0.2
@@ -3952,13 +3893,6 @@ snapshots:
       markdown-it: 14.3.1
 
   '@mdit-vue/plugin-title@3.0.2':
-    dependencies:
-      '@mdit-vue/shared': 3.0.2
-      '@mdit-vue/types': 3.0.2
-      '@types/markdown-it': 14.2.0
-      markdown-it: 14.3.1
-
-  '@mdit-vue/plugin-toc@3.0.2':
     dependencies:
       '@mdit-vue/shared': 3.0.2
       '@mdit-vue/types': 3.0.2
@@ -3977,9 +3911,9 @@ snapshots:
     optionalDependencies:
       markdown-it: 14.3.1
 
-  '@mdit/plugin-anchor@1.1.3(markdown-it@14.3.1)':
+  '@mdit/plugin-anchor@2.1.0(markdown-it@14.3.1)':
     dependencies:
-      '@types/markdown-it': 14.2.0
+      '@mdit/helper': 1.1.0(markdown-it@14.3.1)
       markdown-it: 14.3.1
 
   '@mdit/plugin-attrs@1.3.0(markdown-it@14.3.1)':
@@ -3988,9 +3922,9 @@ snapshots:
     optionalDependencies:
       markdown-it: 14.3.1
 
-  '@mdit/plugin-container@1.0.2(markdown-it@14.3.1)':
+  '@mdit/plugin-container@2.0.0(markdown-it@14.3.1)':
     dependencies:
-      '@types/markdown-it': 14.2.0
+      '@mdit/helper': 1.1.0(markdown-it@14.3.1)
     optionalDependencies:
       markdown-it: 14.3.1
 
@@ -4385,9 +4319,9 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@typerighter/rpc-client@0.21.0': {}
+  '@typerighter/rpc-client@0.22.1': {}
 
-  '@typerighter/rpc-server@0.21.0':
+  '@typerighter/rpc-server@0.22.1':
     dependencies:
       dotenv: 16.6.1
 
@@ -5350,10 +5284,6 @@ snapshots:
 
   exsolve@1.1.1: {}
 
-  extend-shallow@2.0.1:
-    dependencies:
-      is-extendable: 0.1.1
-
   extendable-error@0.1.7: {}
 
   fast-deep-equal@3.1.3: {}
@@ -5475,13 +5405,6 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  gray-matter@4.0.3:
-    dependencies:
-      js-yaml: 4.3.2
-      kind-of: 6.0.3
-      section-matter: 1.0.0
-      strip-bom-string: 1.0.0
-
   has-flag@4.0.0: {}
 
   hast-util-to-html@9.0.5:
@@ -5524,8 +5447,6 @@ snapshots:
 
   ignore@7.0.8: {}
 
-  image-size@2.0.2: {}
-
   import-fresh@3.3.1:
     dependencies:
       parent-module: 1.0.1
@@ -5538,8 +5459,6 @@ snapshots:
   is-builtin-module@5.0.0:
     dependencies:
       builtin-modules: 5.3.0
-
-  is-extendable@0.1.1: {}
 
   is-extglob@2.1.1: {}
 
@@ -5595,8 +5514,6 @@ snapshots:
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
-
-  kind-of@6.0.3: {}
 
   levn@0.4.1:
     dependencies:
@@ -5751,21 +5668,10 @@ snapshots:
       type-fest: 4.41.0
       web-worker: 1.5.0
 
-  markdown-it-anchor@9.2.1(@types/markdown-it@14.2.0)(markdown-it@14.3.1):
-    dependencies:
-      '@types/markdown-it': 14.2.0
-      markdown-it: 14.3.1
-
   markdown-it-async@2.2.0:
     dependencies:
       '@types/markdown-it': 14.2.0
       markdown-it: 14.3.1
-
-  markdown-it-container@4.0.0: {}
-
-  markdown-it-emoji@3.1.0: {}
-
-  markdown-it-task-lists@2.1.1: {}
 
   markdown-it@14.3.1:
     dependencies:
@@ -6139,11 +6045,6 @@ snapshots:
 
   scule@1.3.0: {}
 
-  section-matter@1.0.0:
-    dependencies:
-      extend-shallow: 2.0.1
-      kind-of: 6.0.3
-
   semver@7.8.5: {}
 
   shebang-command@2.0.0:
@@ -6198,8 +6099,6 @@ snapshots:
   strip-ansi@6.0.1:
     dependencies:
       ansi-regex: 5.0.1
-
-  strip-bom-string@1.0.0: {}
 
   strip-bom@3.0.0: {}
 
@@ -6334,21 +6233,19 @@ snapshots:
 
   type-fest@4.41.0: {}
 
-  typerighter@0.21.0(@types/markdown-it@14.2.0)(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0):
+  typerighter@0.22.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(typescript@6.0.3)(yaml@2.9.0):
     dependencies:
       '@clack/prompts': 1.7.0
       '@floating-ui/vue': 2.0.1(vue@3.5.42(typescript@6.0.3))
       '@fontsource-variable/archivo': 5.3.0
       '@fontsource-variable/jetbrains-mono': 5.3.0
       '@lucide/vue': 1.39.0(vue@3.5.42(typescript@6.0.3))
-      '@mdit-vue/plugin-frontmatter': 3.0.2
       '@mdit-vue/plugin-headers': 3.0.2
       '@mdit-vue/plugin-title': 3.0.2
-      '@mdit-vue/plugin-toc': 3.0.2
       '@mdit-vue/shared': 3.0.2
-      '@mdit/plugin-anchor': 1.1.3(markdown-it@14.3.1)
+      '@mdit/plugin-anchor': 2.1.0(markdown-it@14.3.1)
       '@mdit/plugin-attrs': 1.3.0(markdown-it@14.3.1)
-      '@mdit/plugin-container': 1.0.2(markdown-it@14.3.1)
+      '@mdit/plugin-container': 2.0.0(markdown-it@14.3.1)
       '@mdit/plugin-emoji': 1.2.0(markdown-it@14.3.1)
       '@mdit/plugin-katex': 1.1.0(markdown-it@14.3.1)
       '@mdit/plugin-tasklist': 1.1.0(markdown-it@14.3.1)
@@ -6356,27 +6253,21 @@ snapshots:
       '@shikijs/transformers': 4.4.3
       '@shikijs/types': 4.4.3
       '@tailwindcss/vite': 4.3.3(vite@8.2.2(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
-      '@typerighter/rpc-client': 0.21.0
-      '@typerighter/rpc-server': 0.21.0
+      '@typerighter/rpc-client': 0.22.1
+      '@typerighter/rpc-server': 0.22.1
       '@vitejs/plugin-vue': 6.0.8(vite@8.2.2(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3))
       '@vue/shared': 3.5.42
       cac: 7.0.0
-      image-size: 2.0.2
       js-yaml: 5.4.1
       katex: 0.18.5
       markdown-it: 14.3.1
-      markdown-it-anchor: 9.2.1(@types/markdown-it@14.2.0)(markdown-it@14.3.1)
       markdown-it-async: 2.2.0
-      markdown-it-container: 4.0.0
-      markdown-it-emoji: 3.1.0
-      markdown-it-task-lists: 2.1.1
       picocolors: 1.1.1
       shiki: 4.4.3
       tailwindcss: 4.3.3
       vite: 8.2.2(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
       vue: 3.5.42(typescript@6.0.3)
     transitivePeerDependencies:
-      - '@types/markdown-it'
       - '@types/node'
       - '@vitejs/devtools'
       - esbuild
