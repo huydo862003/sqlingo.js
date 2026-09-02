@@ -31,7 +31,7 @@
           </p>
         </div>
 
-        <div class="mt-4 flex flex-wrap items-center gap-3 max-w-[33em]">
+        <div class="mt-4 flex max-w-[33em] flex-wrap items-center gap-3">
           <div
             class="gui-primary-border-subtle flex w-full items-center gap-3 rounded-[10px] border bg-white px-5 py-3 shadow-xs"
           >

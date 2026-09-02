@@ -67,6 +67,7 @@ import {
 import {
   GBreadcrumb, GBreadcrumbItem,
 } from '@hdnax/genuix';
+
 const {
   breadcrumb = [],
 } = defineProps<{

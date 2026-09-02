@@ -190,6 +190,8 @@
 		"test:coverage": "vitest --coverage",
 		"build": "tsup",
 		"dev": "tsup --watch",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
 		"typecheck": "tsc --noEmit",
 		"prepublishOnly": "cp README.md README.repo.md && cp README.npm.md README.md",
 		"postpublish": "mv README.repo.md README.md"
