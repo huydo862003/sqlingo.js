@@ -6,7 +6,7 @@
 		"version": "29.0.0",
 		"url": "https://github.com/tobymao/sqlglot"
 	},
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"type": "module",
 	"description": "SQL parser, transpiler, optimizer, and engine for JavaScript/TypeScript - 32 dialects (Postgres, MySQL, BigQuery, Snowflake, DuckDB, etc). Port of Python SQLGlot.",
 	"main": "dist/index.cjs",

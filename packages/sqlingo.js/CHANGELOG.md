@@ -1,5 +1,11 @@
 # @hdnax/sqlingo.js
 
+## 0.6.0
+
+### Minor Changes
+
+- 625fb15: Fix circular imports leading to unusability
+
 ## 0.5.0
 
 ### Minor Changes
