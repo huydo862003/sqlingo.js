@@ -669,7 +669,7 @@ class StarRocksGenerator extends MySQL.Generator {
         const engineIndex = engine?.index !== undefined ? engine.index : -1;
 
         // Move the Primary Key from the schema to the properties list at the correct index
-        props.setArgKey('expressions', [primaryKey.pop()], engineIndex + 1, {
+        props.setArgKey('expressions', primaryKey.pop(), engineIndex + 1, {
           overwrite: false,
         });
       }

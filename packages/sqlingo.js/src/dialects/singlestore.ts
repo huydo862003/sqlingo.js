@@ -265,11 +265,10 @@ class SingleStoreParser extends MySQL.Parser {
           }),
         WEEKDAY: (args: Expression[]) =>
           new ParenExpr({
-            this: (new DayOfWeekExpr({
+            this: new DayOfWeekExpr({
               this: seqGet(args, 0),
-            }).add(5))
-              .mod(7),
-          }),
+            }).add(5),
+          }).mod(7),
         UNIX_TIMESTAMP: (args: unknown[]) => StrToUnixExpr.fromArgList(args),
         FROM_UNIXTIME: buildFormattedTime(UnixToTimeExpr, {
           dialect: 'mysql',
@@ -1060,7 +1059,7 @@ class SingleStoreGenerator extends MySQL.Generator {
             LiteralExpr.string(''),
             new MulExpr({
               this: this.func('LENGTH', [e.args.this]),
-              expression: e.args.times?.[0],
+              expression: e.args.times,
             }),
             e.args.this,
           ]);
@@ -1069,7 +1068,7 @@ class SingleStoreGenerator extends MySQL.Generator {
       [
         IsAsciiExpr,
         function (this: Generator, e: IsAsciiExpr) {
-          return `(${this.sql(e.args.this)} RLIKE '^[\\x00-\\x7f]*$')`;
+          return `(${this.sql(e.args.this)} RLIKE '^[\x00-\x7f]*$')`;
         },
       ],
       [

@@ -162,6 +162,7 @@ import {
   UnnestExpr,
   UpperExpr,
   VarExpr,
+  WeekStartExpr,
   WithinGroupExpr,
   cast,
   var_,
@@ -196,6 +197,9 @@ import {
   Parser,
 } from '../parser';
 import {
+  ParseError,
+} from '../errors';
+import {
   newTrie, type TrieNode,
 } from '../trie';
 import {
@@ -212,6 +216,7 @@ import {
   ensureList,
   isInt,
   seqGet,
+  snakeToCamelCase,
   suggestClosestMatchAndFail, toBool,
 } from '../helper';
 import {
@@ -875,6 +880,11 @@ export class Dialect {
   }
 
   @cache
+  static get INVERSE_FORMAT_TRIE (): TrieNode {
+    return newTrie(Object.keys(this.INVERSE_FORMAT_MAPPING));
+  }
+
+  @cache
   static get INVERSE_CREATABLE_KIND_MAPPING (): Record<string, string> {
     return Object.fromEntries(Object.entries(this.CREATABLE_KIND_MAPPING).map(([
       k,
@@ -1243,7 +1253,7 @@ export class Dialect {
             value = parts[1].trim();
           }
 
-          kwargs[key] = toBool(value) ?? value;
+          kwargs[snakeToCamelCase(key)] = toBool(value) ?? value;
         }
       } catch {
         throw new Error(
@@ -1656,25 +1666,17 @@ export function jarowinklerSimilarity (funcName: string): (this: Generator, expr
 
 export function renameFunc (name: string): (this: Generator, expression: Expression) => string {
   return function (this: Generator, expression: Expression): string {
-    const constructor = expression._constructor as typeof FuncExpr;
-    const argOrder = constructor.argOrder;
+    const args: (ExpressionValue | undefined)[] = [];
 
-    if (argOrder && 0 < argOrder.length) {
-      const args = argOrder
-        .map((arg) => expression.getArgKey(arg))
-        .filter((arg) => arg !== undefined);
-      // Flatten arrays (for var len args)
-      const flattenedArgs = args.reduce((acc: (ExpressionValue | undefined)[], val) =>
-        (Array.isArray(val)
-          ? acc.concat(val)
-          : acc.concat([val])), []);
-
-      return this.func(name, flattenedArgs);
+    for (const val of Object.values(expression.args)) {
+      if (Array.isArray(val)) {
+        args.push(...val);
+      } else {
+        args.push(val as ExpressionValue | undefined);
+      }
     }
 
-    const values = Object.values(expression.args).filter((v) => v !== undefined);
-
-    return this.func(name, values);
+    return this.func(name, args);
   };
 }
 
@@ -2323,11 +2325,11 @@ export function buildDateDeltaWithInterval<T extends Expression> (
   ExpClass: new (args: any) => T,
 ): (args: any) => T {
   return (args: any) => {
-    if (args.length < 2) throw new Error(`Expected at least 2 arguments but got ${args.length}`);
+    if (args.length < 2) throw new ParseError(`Expected at least 2 arguments but got ${args.length}`);
     const interval = args[1];
 
     if (!(interval instanceof IntervalExpr)) {
-      throw new Error(`INTERVAL expression expected but got '${interval}'`);
+      throw new ParseError(`INTERVAL expression expected but got '${interval}'`);
     }
 
     return new ExpClass({
@@ -2828,7 +2830,7 @@ export function boolXorSql (this: Generator, expression: XorExpr): string {
   const a = this.sql(expression.left);
   const b = this.sql(expression.right);
 
-  return `(${a} AND (NOT ${b})) OR ((NOT ${a}) AND {b})`;
+  return `(${a} AND (NOT ${b})) OR ((NOT ${a}) AND ${b})`;
 }
 
 export function isParseJson (expression: unknown): boolean {
@@ -2975,7 +2977,7 @@ export function unitToVar (expression: TimeUnitExpr, options: {
   } = options;
   const unit = expression.args.unit;
 
-  if (unit instanceof VarExpr || unit instanceof PlaceholderExpr || unit instanceof ColumnExpr) {
+  if (unit instanceof VarExpr || unit instanceof PlaceholderExpr || unit instanceof ColumnExpr || unit instanceof WeekStartExpr) {
     return unit;
   }
 
@@ -3538,16 +3540,17 @@ export function lengthOrCharLengthSql (this: Generator, expression: LengthExpr):
 
 export function groupConcatSql (this: Generator, expression: GroupConcatExpr, options: {
   funcName?: string;
-  sep?: string;
+  sep?: string | null;
   withinGroup?: boolean;
   onOverflow?: boolean;
 } = {}): string {
   const {
-    funcName = 'LISTAGG', sep = ',', withinGroup = true, onOverflow = false,
+    funcName = 'LISTAGG', sep: sepOpt, withinGroup = true, onOverflow = false,
   } = options;
+  const sep = sepOpt === undefined ? ',' : sepOpt;
   let thisArg: Expression | undefined = expression.args.this;
   const separator = this.sql(expression.args.separator || (sep ? LiteralExpr.string(sep) : undefined));
-  const overflow = onOverflow && this.sql(expression, 'on_overflow') ? ` ON OVERFLOW ${this.sql(expression, 'on_overflow')}` : '';
+  const overflow = onOverflow && this.sql(expression, 'onOverflow') ? ` ON OVERFLOW ${this.sql(expression, 'onOverflow')}` : '';
 
   let limit = undefined;
 
@@ -3561,7 +3564,7 @@ export function groupConcatSql (this: Generator, expression: GroupConcatExpr, op
   if (order?.args.this) thisArg = order.args.this.pop();
 
   const formattedArgs = [
-    thisArg,
+    thisArg ? this.sql(thisArg) : undefined,
     separator ? `${separator}${overflow}` : (overflow || undefined),
   ].filter(Boolean).join(', ');
   let listagg: Expression = new AnonymousExpr({

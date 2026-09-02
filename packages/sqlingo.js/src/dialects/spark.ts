@@ -218,7 +218,7 @@ class SparkTokenizer extends Spark2.Tokenizer {
   static STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS = false;
 
   @cache
-  static get KEYWORDS () {
+  static get ORIGINAL_KEYWORDS (): Record<string, TokenType> {
     return {
       ...Spark2.Tokenizer.KEYWORDS,
       DECLARE: TokenType.DECLARE,

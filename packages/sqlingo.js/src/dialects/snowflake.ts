@@ -3958,8 +3958,8 @@ export class Snowflake extends Dialect {
       'T': 'T', // Prevent 'T' from being mapped back to '"T"'
       '%Y': 'yyyy',
       '%y': 'yy',
-      '%B': 'MMMM',
-      '%b': 'MON',
+      '%B': 'mmmm',
+      '%b': 'mon',
       '%m': 'mm',
       '%d': 'DD',
       '%-d': 'dd',

@@ -26,6 +26,8 @@ import {
   ArrayExpr,
   BinaryExpr,
   BracketExpr,
+  CastExpr,
+  TryCastExpr,
   ColumnExpr,
   ColumnDefExpr,
   DataTypeExpr,
@@ -731,7 +733,10 @@ export class TypeAnnotator {
         continue;
       }
 
-      this.setType(expr, DataTypeExprKind.UNKNOWN);
+      // Don't set UNKNOWN on CastExpr/TryCastExpr - they derive type from 'to' arg
+      if (!(expr instanceof CastExpr || expr instanceof TryCastExpr)) {
+        this.setType(expr, DataTypeExprKind.UNKNOWN);
+      }
     }
   }
 

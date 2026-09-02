@@ -13,6 +13,7 @@ import {
   CorrExpr,
   MonthsBetweenExpr,
   AddMonthsExpr,
+  TsOrDsAddExpr,
   CurrentDatabaseExpr,
   CurrentSchemaExpr,
   CurrentUserExpr,
@@ -71,6 +72,7 @@ export class HiveTyping {
 
     extend([
       AddMonthsExpr,
+      TsOrDsAddExpr,
       CurrentDatabaseExpr,
       CurrentUserExpr,
       CurrentSchemaExpr,

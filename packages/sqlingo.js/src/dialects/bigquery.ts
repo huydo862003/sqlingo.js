@@ -197,6 +197,7 @@ import type {
 } from '../typing/dialect';
 import {
   seqGet,
+  snakeToCamelCase,
   splitNumWords,
 } from '../helper';
 import {
@@ -481,7 +482,7 @@ export function buildJsonStripNulls (args: Expression[]): JsonStripNullsExpr {
       const kwargName = arg.args.this?.name.toLowerCase();
 
       if (kwargName !== undefined) {
-        expression.setArgKey(kwargName, arg);
+        expression.setArgKey(snakeToCamelCase(kwargName), arg);
       }
     } else {
       expression.setArgKey('expression', arg);
@@ -498,9 +499,7 @@ export function buildJsonStripNulls (args: Expression[]): JsonStripNullsExpr {
 export function arrayContainsSql (this: Generator, expression: ArrayContainsExpr): string {
   const select = new SelectExpr({
     expressions: [
-      new IdentifierExpr({
-        this: '1',
-      }),
+      LiteralExpr.number(1),
     ],
   })
     .from(
@@ -1386,7 +1385,7 @@ export class BigQueryParser extends Parser {
         const kwargThis = (arg as KwargExpr).args.this;
 
         if (kwargThis) {
-          expr.setArgKey(kwargThis.name, arg);
+          expr.setArgKey(snakeToCamelCase(kwargThis.name), arg);
         }
       }
     }
@@ -1425,7 +1424,7 @@ export class BigQueryParser extends Parser {
         const arg = this.parseLambda();
 
         if (arg instanceof KwargExpr && arg.args.this) {
-          expr.setArgKey(arg.args.this.name, arg);
+          expr.setArgKey(snakeToCamelCase(arg.args.this.name), arg);
         }
       }
     }
@@ -2026,7 +2025,7 @@ export class BigQueryGenerator extends Generator {
           return groupConcatSql.call(this, e, {
             funcName: 'STRING_AGG',
             withinGroup: false,
-            sep: undefined,
+            sep: null,
           });
         },
       ],
@@ -2769,6 +2768,13 @@ export class BigQueryGenerator extends Generator {
       thisNode,
       expr,
       expression.args.jsonScope,
+    ]);
+  }
+
+  regexpExtractAllSql (expression: RegexpExtractAllExpr): string {
+    return this.func('REGEXP_EXTRACT_ALL', [
+      expression.args.this,
+      expression.args.expression,
     ]);
   }
 

@@ -581,6 +581,8 @@ export class OracleParser extends Parser {
   }
 }
 export class OracleGenerator extends Generator {
+  static ON_CONDITION_EMPTY_BEFORE_ERROR = false;
+
   @cache
   static get AFTER_HAVING_MODIFIER_TRANSFORMS () {
     const modifiers = new Map(super.AFTER_HAVING_MODIFIER_TRANSFORMS);

@@ -698,12 +698,6 @@ export const TIMEZONES = new Set([
  */
 export function subsecondPrecision (timestampLiteral: string): number {
   try {
-    const parsed = DateTime.fromISO(timestampLiteral);
-
-    if (!parsed.isValid) {
-      return 0;
-    }
-
     // Extract fractional seconds from the timestamp string
     const match = timestampLiteral.match(/\.(\d+)/);
 
