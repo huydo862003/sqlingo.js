@@ -312,7 +312,8 @@ const demos: Record<
   }
 > = {
   parse: {
-    code: `import { parse } from "@hdnax/sqlingo.js";
+    code: `import "@hdnax/sqlingo.js/mysql";
+import { parse } from "@hdnax/sqlingo.js";
 
 const [ast] = parse(
   "SELECT a, b FROM t WHERE a > 1",
@@ -326,7 +327,9 @@ const [ast] = parse(
     note: 'A full expression tree, mirroring SQLGlot\'s node classes one for one.',
   },
   transpile: {
-    code: `import { transpile } from "@hdnax/sqlingo.js";
+    code: `import "@hdnax/sqlingo.js/mysql";
+import "@hdnax/sqlingo.js/postgres";
+import { transpile } from "@hdnax/sqlingo.js";
 
 const [sql] = transpile(
   "SELECT DATE_SUB(d, INTERVAL 1 DAY) FROM t",
