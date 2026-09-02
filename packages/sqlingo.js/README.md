@@ -36,22 +36,14 @@ Peer dependency: [`luxon`](https://www.npmjs.com/package/luxon) (^3.7.2) is requ
 This example demonstrates transpiling a query from Spark to Postgres and then optimizing it.
 
 ```ts
-import {
-  transpile,
-  parseOne,
-  optimize,
-  MappingSchema,
-  Dialects,
-} from "@hdnax/sqlingo.js";
-// Note: You must explictly import from a dialect
-// for sqlingo.js to detect this dialect
-import "@hdnax/sqlingo.js/postgres";
-import "@hdnax/sqlingo.js/spark";
+import { transpile, parseOne, optimize, MappingSchema } from "@hdnax/sqlingo.js";
+import { Postgres } from "@hdnax/sqlingo.js/postgres";
+import { Spark } from "@hdnax/sqlingo.js/spark";
 
 // Transpile between dialects
 const [pgSql] = transpile("SELECT APPROX_COUNT_DISTINCT(x) FROM table", {
-  read: Dialects.Spark,
-  write: Dialects.Postgres,
+  read: Spark,
+  write: Postgres,
 });
 console.log(pgSql);
 // Output: SELECT COUNT(DISTINCT x) FROM "table"

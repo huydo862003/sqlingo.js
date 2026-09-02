@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@hdnax/sqlingo.js)](https://www.npmjs.com/package/@hdnax/sqlingo.js)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/huydo862003/sqlingo.js/blob/master/LICENSE)
-![SQLGlot](https://img.shields.io/badge/SQLGlot-v28.10.1-blue)
+![SQLGlot](https://img.shields.io/badge/SQLGlot-v29.0.0-blue)
 <a href="https://github.com/huydo862003/Fck-AI-Slop#plan"><img src="https://img.shields.io/badge/human%20slop-90EE90"></a>
 
 A JavaScript/TypeScript port of [SQLGlot](https://github.com/tobymao/sqlglot) which is compatible with browser and Node runtimes.
@@ -22,7 +22,7 @@ NOTICE: AI is not the decision maker, designer or maintainer for this project. I
 ## Features
 
 - 32 SQL dialects: Postgres, MySQL, BigQuery, Snowflake, DuckDB, ClickHouse, Redshift, Athena, Spark, and many more
-- Full SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution
+- Some SQLGlot feature set: parsing, transpilation, optimization, column lineage, SQL diffing, and execution
 - Pure JavaScript: no need for WASM or native dependencies
 - TypeScript-first: full type definitions included
 
@@ -41,22 +41,14 @@ Peer dependency: [`luxon`](https://www.npmjs.com/package/luxon) (^3.7.2) is requ
 This example demonstrates transpiling a query from Spark to Postgres and then optimizing it.
 
 ```ts
-import {
-  transpile,
-  parseOne,
-  optimize,
-  MappingSchema,
-  Dialects,
-} from "@hdnax/sqlingo.js";
-// Note: The dialect file must be explicitly imported
-// for the dialect to be registered to sqlingo.js
-import "@hdnax/sqlingo.js/postgres";
-import "@hdnax/sqlingo.js/spark";
+import { transpile, parseOne, optimize, MappingSchema } from "@hdnax/sqlingo.js";
+import { Postgres } from "@hdnax/sqlingo.js/postgres";
+import { Spark } from "@hdnax/sqlingo.js/spark";
 
 // Transpile between dialects
 const [pgSql] = transpile("SELECT APPROX_COUNT_DISTINCT(x) FROM table", {
-  read: Dialects.Spark,
-  write: Dialects.Postgres,
+  read: Spark,
+  write: Postgres,
 });
 console.log(pgSql);
 // Output: SELECT COUNT(DISTINCT x) FROM "table"
@@ -91,13 +83,13 @@ const expr = parseOne("SELECT a, b FROM t WHERE a > 1");
 Convert SQL between different dialects.
 
 ```ts
-import { transpile, Dialects } from "@hdnax/sqlingo.js";
-import "@hdnax/sqlingo.js/duckdb";
-import "@hdnax/sqlingo.js/hive";
+import { transpile } from "@hdnax/sqlingo.js";
+import { DuckDB } from "@hdnax/sqlingo.js/duckdb";
+import { Hive } from "@hdnax/sqlingo.js/hive";
 
 const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
-  read: Dialects.Duckdb,
-  write: Dialects.Hive,
+  read: DuckDB,
+  write: Hive,
 });
 // Output: "SELECT FROM_UNIXTIME(1618088028295 / POW(10, 3))"
 ```
@@ -107,11 +99,11 @@ const [result] = transpile("SELECT EPOCH_MS(1618088028295)", {
 Extract tokens from a SQL string for lower-level analysis.
 
 ```ts
-import { tokenize, Dialects } from "@hdnax/sqlingo.js";
-import "@hdnax/sqlingo.js/postgres";
+import { tokenize } from "@hdnax/sqlingo.js";
+import { Postgres } from "@hdnax/sqlingo.js/postgres";
 
 const tokens = tokenize("SELECT 1", {
-  dialect: Dialects.Postgres,
+  dialect: Postgres,
 });
 ```
 
@@ -120,14 +112,14 @@ const tokens = tokenize("SELECT 1", {
 Build queries programmatically using a fluent API.
 
 ```ts
-import { select, column, condition, Dialects } from "@hdnax/sqlingo.js";
-import "@hdnax/sqlingo.js/mysql";
+import { select, condition } from "@hdnax/sqlingo.js";
+import { MySQL } from "@hdnax/sqlingo.js/mysql";
 
 const query = select("a", "b").from("t").where(condition("a > 1")).limit(10);
 
 console.log(
   query.sql({
-    dialect: Dialects.Mysql,
+    dialect: MySQL,
   }),
 );
 // Output: SELECT a, b FROM t WHERE a > 1 LIMIT 10
@@ -188,7 +180,7 @@ Athena, BigQuery, ClickHouse, Databricks, Doris, Dremio, Drill, Druid, DuckDB, D
 
 ## SQLGlot Compatibility
 
-This package tracks [SQLGlot](https://github.com/tobymao/sqlglot) v28.10.1 (commit `9b32722`). The API surface mirrors SQLGlot's Python API, adapted to TypeScript conventions. See [CONVENTION.md](https://github.com/huydo862003/sqlingo.js/blob/master/CONVENTION.md) for details.
+This package tracks [SQLGlot](https://github.com/tobymao/sqlglot) v29.0.0 (commit `4a38462`). The API surface mirrors SQLGlot's Python API, adapted to TypeScript conventions. See [CONVENTION.md](https://github.com/huydo862003/sqlingo.js/blob/master/CONVENTION.md) for details.
 
 ## License
 
