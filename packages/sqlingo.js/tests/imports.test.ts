@@ -56,16 +56,53 @@ describe('Bundle imports', () => {
 
   it('expression classes are defined', () => {
     const classes = [
-      Expression, SelectExpr, ColumnExpr, TableExpr, LiteralExpr,
-      CreateExpr, DropExpr, InsertExpr, UpdateExpr, DeleteExpr,
-      AliasExpr, IdentifierExpr, StarExpr, WhereExpr, FromExpr,
-      JoinExpr, OrderExpr, GroupExpr, HavingExpr, LimitExpr,
-      UnionExpr, SubqueryExpr, CaseExpr, IfExpr, InExpr,
-      FuncExpr, AnonymousExpr, CastExpr, DataTypeExpr,
-      AddExpr, SubExpr, MulExpr, EqExpr, NeqExpr, GtExpr, LtExpr,
-      AndExpr, OrExpr, NotExpr, NullExpr, BooleanExpr,
-      BlockExpr, StoredProcedureExpr, ExecuteExpr, IfBlockExpr,
-      TriggerPropertiesExpr, TriggerEventExpr,
+      Expression,
+      SelectExpr,
+      ColumnExpr,
+      TableExpr,
+      LiteralExpr,
+      CreateExpr,
+      DropExpr,
+      InsertExpr,
+      UpdateExpr,
+      DeleteExpr,
+      AliasExpr,
+      IdentifierExpr,
+      StarExpr,
+      WhereExpr,
+      FromExpr,
+      JoinExpr,
+      OrderExpr,
+      GroupExpr,
+      HavingExpr,
+      LimitExpr,
+      UnionExpr,
+      SubqueryExpr,
+      CaseExpr,
+      IfExpr,
+      InExpr,
+      FuncExpr,
+      AnonymousExpr,
+      CastExpr,
+      DataTypeExpr,
+      AddExpr,
+      SubExpr,
+      MulExpr,
+      EqExpr,
+      NeqExpr,
+      GtExpr,
+      LtExpr,
+      AndExpr,
+      OrExpr,
+      NotExpr,
+      NullExpr,
+      BooleanExpr,
+      BlockExpr,
+      StoredProcedureExpr,
+      ExecuteExpr,
+      IfBlockExpr,
+      TriggerPropertiesExpr,
+      TriggerEventExpr,
     ];
 
     for (const cls of classes) {
@@ -75,10 +112,31 @@ describe('Bundle imports', () => {
 
   it('expression builder helpers are defined', () => {
     const helpers = [
-      column, select, from, condition, and, or, not,
-      func, case_, null_, true_, false_, alias, values,
-      update, delete_, insert, subquery, union, intersect, except,
-      table, toIdentifier, cast, maybeParse,
+      column,
+      select,
+      from,
+      condition,
+      and,
+      or,
+      not,
+      func,
+      case_,
+      null_,
+      true_,
+      false_,
+      alias,
+      values,
+      update,
+      delete_,
+      insert,
+      subquery,
+      union,
+      intersect,
+      except,
+      table,
+      toIdentifier,
+      cast,
+      maybeParse,
     ];
 
     for (const fn of helpers) {
@@ -93,19 +151,50 @@ describe('Bundle imports', () => {
   });
 
   it('optimize works with schema', () => {
-    const result = optimize('SELECT * FROM t WHERE 1 = 1 AND x > 2', { schema: { t: { x: 'INT' } } });
+    const result = optimize('SELECT * FROM t WHERE 1 = 1 AND x > 2', {
+      schema: {
+        t: {
+          x: 'INT',
+        },
+      },
+    });
 
     expect(result.sql()).toContain('x');
   });
 
   it('all dialects register and parse', async () => {
     const dialects = [
-      'athena', 'bigquery', 'clickhouse', 'databricks', 'doris', 'dremio',
-      'drill', 'druid', 'duckdb', 'dune', 'exasol', 'fabric', 'hive',
-      'materialize', 'mysql', 'oracle', 'postgres', 'presto',
-      'redshift', 'risingwave', 'singlestore', 'snowflake', 'solr',
-      'spark', 'spark2', 'sqlite', 'starrocks', 'tableau', 'teradata',
-      'trino', 'tsql',
+      'athena',
+      'bigquery',
+      'clickhouse',
+      'databricks',
+      'doris',
+      'dremio',
+      'drill',
+      'druid',
+      'duckdb',
+      'dune',
+      'exasol',
+      'fabric',
+      'hive',
+      'materialize',
+      'mysql',
+      'oracle',
+      'postgres',
+      'presto',
+      'redshift',
+      'risingwave',
+      'singlestore',
+      'snowflake',
+      'solr',
+      'spark',
+      'spark2',
+      'sqlite',
+      'starrocks',
+      'tableau',
+      'teradata',
+      'trino',
+      'tsql',
     ];
 
     for (const d of dialects) {
@@ -113,12 +202,19 @@ describe('Bundle imports', () => {
     }
 
     for (const d of dialects) {
-      const [ast] = parse('SELECT 1', { read: d });
+      const [ast] = parse('SELECT 1', {
+        read: d,
+      });
 
       expect(ast).toBeDefined();
-      expect(ast.sql({ dialect: d })).toBe('SELECT 1');
+      expect(ast.sql({
+        dialect: d,
+      })).toBe('SELECT 1');
 
-      const [sql] = transpile('SELECT 1', { read: d, write: d });
+      const [sql] = transpile('SELECT 1', {
+        read: d,
+        write: d,
+      });
 
       expect(sql).toBe('SELECT 1');
     }

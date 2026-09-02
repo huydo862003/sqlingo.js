@@ -47,9 +47,6 @@ import {
 import {
   useSeoMeta,
 } from '@unhead/vue';
-import {
-  GTooltip,
-} from '@hdnax/genuix';
 import SqlToDbml from './SqlToDbml.vue';
 import SqlTranspile from './SqlTranspile.vue';
 import MainLayout from '@/layout/main/MainLayout.vue';
