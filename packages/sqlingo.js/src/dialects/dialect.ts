@@ -881,7 +881,7 @@ export class Dialect {
 
   @cache
   static get INVERSE_FORMAT_TRIE (): TrieNode {
-    return newTrie(Object.keys(this.INVERSE_FORMAT_MAPPING));
+    return newTrie(Object.keys(this.INVERSE_FORMAT_MAPPING).map((k) => Array.from(k)));
   }
 
   @cache

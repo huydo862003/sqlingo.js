@@ -2577,8 +2577,8 @@ export class Parser {
       'CLUSTERED': function (this: Parser) {
         return this.parseClusteredBy();
       },
-      'COLLATE': function (this: Parser, kwargs?: Record<string, unknown>) {
-        return this.parsePropertyAssignment(CollatePropertyExpr, kwargs);
+      'COLLATE': function (this: Parser, ...args: unknown[]) {
+        return this.parsePropertyAssignment(CollatePropertyExpr, args[0] as Record<string, unknown> | undefined);
       },
       'COMMENT': function (this: Parser) {
         return this.parsePropertyAssignment(SchemaCommentPropertyExpr);
@@ -12094,7 +12094,7 @@ export class Parser {
       : [];
 
     while (this.match(sep)) {
-      this.addComments(parseResult);
+      if (parseResult instanceof Expression) this.addComments(parseResult);
       parseResult = parseMethod();
       if (parseResult !== undefined) {
         items.push(parseResult);
