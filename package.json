@@ -12,12 +12,12 @@
 		"doc": "pnpm --filter @hdnax/sqlingo.js-homepage run build"
 	},
 	"devDependencies": {
-		"@changesets/cli": "^2.29.8",
-		"@hdnax/nuclint": "^0.17.4",
-		"eslint": "^9.39.2",
-		"eslint-plugin-vue": "^10.9.1",
-		"tailwindcss": "^4.2.4",
-		"vue-tsc": "^3.2.8"
+		"@changesets/cli": "^2.31.1",
+		"@hdnax/nuclint": "^0.17.5",
+		"eslint": "^9.39.5",
+		"eslint-plugin-vue": "^10.10.0",
+		"tailwindcss": "^4.3.3",
+		"vue-tsc": "^3.3.11"
 	},
 	"pnpm": {
 		"overrides": {
