@@ -1,5 +1,3 @@
-# Builder helpers
-
 Fluent API for building SQL programmatically.
 
 ## `select(...columns)`

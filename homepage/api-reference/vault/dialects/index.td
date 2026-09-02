@@ -1,5 +1,3 @@
-# Supported dialects
-
 32 SQL dialects, each importable as a standalone module:
 
 | Dialect | Import |

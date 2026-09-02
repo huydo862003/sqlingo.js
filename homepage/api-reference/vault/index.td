@@ -1,5 +1,3 @@
-# sqlingo.js API Reference
-
 A SQL parser, transpiler, and optimizer supporting 32 dialects.
 
 ## Core

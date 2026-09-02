@@ -1,5 +1,3 @@
-# Optimize
-
 ## `optimize(sql, options?)`
 
 Canonicalize and optimize a SQL query.

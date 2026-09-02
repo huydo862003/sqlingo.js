@@ -1,5 +1,3 @@
-# Dialect
-
 ## Class-based (recommended)
 
 Pass dialect classes directly. No registration needed, fully tree-shakeable.

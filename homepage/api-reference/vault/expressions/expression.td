@@ -1,5 +1,3 @@
-# Expression
-
 The base class for all AST nodes. Every parsed SQL element is an `Expression`.
 
 ## Key methods

@@ -1,5 +1,3 @@
-# Parsing & Transpiling
-
 ## `parse(sql, options?)`
 
 Parse SQL into an array of AST expressions.
