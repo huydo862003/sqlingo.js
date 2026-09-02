@@ -8204,9 +8204,11 @@ export class Generator {
   }
 
   unixDateSql (expression: UnixDateExpr): string {
+    const thisArg = expression.args.this;
+
     return this.sql(
       new DateDiffExpr({
-        this: expression.args.this,
+        this: thisArg instanceof Expression ? thisArg : undefined,
         expression: cast(LiteralExpr.string('1970-01-01'), DataTypeExprKind.DATE),
         unit: var_('day'),
       }),

@@ -26495,8 +26495,8 @@ export type FeaturesAtTimeExprArgs = Merge<[
   {
     this?: Expression;
     time?: Expression;
-    numRows?: Expression[];
-    ignoreFeatureNulls?: Expression[];
+    numRows?: Expression;
+    ignoreFeatureNulls?: Expression;
   },
 ]>;
 
@@ -26614,7 +26614,7 @@ export type VectorSearchExprArgs = Merge<[
     queryColumnToSearch?: Expression;
     topK?: Expression;
     distanceType?: Expression;
-    options?: Expression[];
+    options?: Expression;
   },
 ]>;
 
