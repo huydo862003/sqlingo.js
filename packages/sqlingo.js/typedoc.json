@@ -1,8 +1,8 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "hostedBaseUrl": "https://huydo862003.github.io/sqlingo.js/api/",
+  "hostedBaseUrl": "https://huydo862003.github.io/sqlingo.js/api-reference/",
   "entryPoints": ["src/index.ts"],
-  "out": "doc/api",
+  "out": "../../doc/api-reference",
   "plugin": ["typedoc-github-theme"],
   "theme": "typedoc-github-theme",
   "excludePrivate": true,

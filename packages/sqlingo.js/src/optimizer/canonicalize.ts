@@ -36,6 +36,9 @@ import {
   WhereExpr,
 } from '../expressions/expressions';
 import {
+  cache,
+} from '../port_internals';
+import {
   Dialect, type DialectType,
 } from '../dialects/dialect';
 import {
@@ -185,10 +188,7 @@ export function replaceDateFuncs (node: Expression, dialect: Dialect): Expressio
   return node;
 }
 
-/**
- * Coercible date operation types
- */
-const COERCIBLE_DATE_OPS = [
+const getCoercibleDateOps = cache(() => [
   AddExpr,
   SubExpr,
   EqExpr,
@@ -199,7 +199,7 @@ const COERCIBLE_DATE_OPS = [
   LteExpr,
   NullSafeEqExpr,
   NullSafeNeqExpr,
-];
+]);
 
 /**
  * Coerce types for date operations
@@ -211,7 +211,7 @@ export function coerceType (node: Expression, options: {
     promoteToInferredDatetimeType = false,
   } = options;
   // Check if node is a coercible date op
-  const isCoercibleOp = COERCIBLE_DATE_OPS.some((opClass) => node instanceof opClass);
+  const isCoercibleOp = getCoercibleDateOps().some((opClass) => node instanceof opClass);
 
   if (isCoercibleOp) {
     const left = node.args.this;

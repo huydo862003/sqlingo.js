@@ -1,6 +1,7 @@
 // https://github.com/tobymao/sqlglot/blob/main/sqlglot/optimizer/merge_subqueries.py
 
 import {
+  cache,
   isInstanceOf,
 } from '../port_internals';
 import {
@@ -87,13 +88,13 @@ export function mergeSubqueries<E extends Expression> (
   return expression;
 }
 
-const SAFE_TO_REPLACE_UNWRAPPED = [
+const getSafeToReplaceUnwrapped = cache(() => [
   ColumnExpr,
   EqExpr,
   FuncExpr,
   NeqExpr,
   ParenExpr,
-] as const;
+]);
 
 type FromOrJoin = FromExpr | JoinExpr;
 
@@ -584,7 +585,7 @@ function mergeExpressions (outerScope: Scope, innerScope: Scope, alias: string):
     const columnsToReplace = outerColumns.get(projectionName) || [];
 
     const unaliasedExpr = expr.unalias();
-    const mustWrapExpression = !SAFE_TO_REPLACE_UNWRAPPED.some((cls) => unaliasedExpr instanceof cls);
+    const mustWrapExpression = !getSafeToReplaceUnwrapped().some((cls) => unaliasedExpr instanceof cls);
     const isNumber = unaliasedExpr.isNumber;
 
     for (const column of columnsToReplace) {

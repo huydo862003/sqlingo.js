@@ -12,22 +12,49 @@
 export function cache<T> (
   target: () => T,
   context: ClassGetterDecoratorContext,
+): () => T;
+/**
+ * Wraps a free function so it only evaluates once, then returns the cached result.
+ *
+ * Usage:
+ *   const getFoo = lazy(() => [A, B, C]);
+ */
+export function cache<T> (
+  fn: () => T,
+): () => T;
+export function cache<T> (
+  target: () => T,
+  context?: ClassGetterDecoratorContext,
 ): () => T {
-  const store = new WeakMap<object, T>();
+  if (context) {
+    const store = new WeakMap<object, T>();
 
-  context.addInitializer(function (this: unknown) {
-    Object.defineProperty(this, context.name, {
-      get (): T {
-        if (!store.has(this)) store.set(this, target.call(this));
+    context.addInitializer(function (this: unknown) {
+      Object.defineProperty(this, context.name, {
+        get (): T {
+          if (!store.has(this)) store.set(this, target.call(this));
 
-        return store.get(this) as T;
-      },
-      set (value: T) {
-        store.set(this, value);
-      },
-      configurable: true,
+          return store.get(this) as T;
+        },
+        set (value: T) {
+          store.set(this, value);
+        },
+        configurable: true,
+      });
     });
-  });
 
-  return target;
+    return target;
+  }
+
+  let value: T;
+  let called = false;
+
+  return () => {
+    if (!called) {
+      value = target();
+      called = true;
+    }
+
+    return value;
+  };
 }
