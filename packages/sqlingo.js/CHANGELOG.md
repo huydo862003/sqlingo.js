@@ -30,6 +30,28 @@
 - Side-effect-free API surface enables tree shaking
 - Package marked with `"sideEffects": false`
 
+### Patch Changes
+
+- Resolve all 44 failing dialect tests ported from sqlglot v29.0.0 (MySQL, BigQuery, Trino, Databricks, SingleStore, Doris, StarRocks, Drill, Druid, Solr)
+- Fix generator method dispatch casing (`dPipeSql`, `atTimeZoneSql`, `regexpExtractAllSql`, `startsWithSql`) and `ExpressionKey.STARTS_WITH` enum value to match camelCase convention
+- Fix `ORIGINAL_KEYWORDS` convention in Spark/Drill tokenizers, preventing `@cache` inheritance bugs for subclass dialects (e.g. Databricks VOID keyword)
+- Fix `renameFunc` to mirror sqlglot's `*flatten(expression.args.values())`
+- Fix `groupConcatSql` dialect-aware generation and `sep: null` semantics (Python `None` vs JS `undefined`)
+- Fix `pivotAliasSql` to use `toIdentifier()` for numeric alias quoting without mutating shared AST
+- Fix `unixDateSql` to route through dialect generators via `DateDiffExpr` instead of raw string
+- Fix DuckDB `trimSql` BLOB-to-TEXT wrapping, `unnestSql` AS keyword, `numberToStrSql` culture check
+- Fix `explodeProjectionToUnnest`: correct `BracketExpr` indexing, `func()` expression building, `offset: 1` for BigQuery `SAFE_ORDINAL`
+- Fix BigQuery `arrayContainsSql` (`LiteralExpr` not `IdentifierExpr`), ML function kwargs snake-to-camelCase, `buildJsonStripNulls` kwargs, jsonpath `VAR_TOKENS` for hyphenated keys
+- Fix `analyzeSql` clause ordering, `introducerSql` prefix, `boolXorSql` template literal, `ShaLLOW` typo, `sqlName()` call
+- Fix `annotateTypes` to preserve `CastExpr` natural type (not overwrite with `UNKNOWN`), add `INVERSE_FORMAT_TRIE` for format roundtrip
+- Fix MySQL `ESCAPE_FOLLOW_CHARS` static, escape string handling, `timestampTruncSql` quotes, `TO_DAYS` paren, `CharacterSet` default
+- Fix expression `argOrder` for `GapFillExpr`, `TimeStrToTimeExpr`, `TimeExpr`, `RegexpExtractAllExpr`
+- Fix Snowflake inverse time mapping (`mmmm`/`mon`), SingleStore WEEKDAY/Repeat/IsAscii, StarRocks `createSql`, Doris partition parsing/property quoting, Oracle `ON_CONDITION_EMPTY_BEFORE_ERROR`
+- Fix `subsecondPrecision` to use regex instead of Luxon for space-separated timestamps
+- Add missing `register()` on `ExplodeOuterExpr`, `PosexplodeOuterExpr`, `ApproxQuantileExpr`, `ArrayExceptExpr`, `JsonArrayExpr.fromArgList`, `JsonbContainsExpr`, `JsonArrayContainsExpr`, `AndExpr`, `OrExpr`, `XorExpr`
+- Add `TsOrDsAddExpr` type annotation in Spark2/Hive typing for `ADD_MONTHS` transpilation
+- Fix test porting issues: BigQuery byte strings, MySQL escape sequences, raw string newlines, hex byte chars, bracket assertions, `from_` to `from` property access
+
 ## 0.5.0
 
 ### Minor Changes
