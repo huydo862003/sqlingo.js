@@ -12082,7 +12082,7 @@ export class Parser {
       : undefined;
   }
 
-  parseCsv<E extends Expression> (parseMethod: () => E | undefined, options: {
+  parseCsv<E extends Expression | Expression[]> (parseMethod: () => E | undefined, options: {
     sep?: TokenType;
   } = {}): E[] {
     const {
